@@ -227,7 +227,7 @@
     }
   }
 
-  function renderOffline(){
+  function renderOffline(mode='offline'){
     const snapshot = getSnapshot();
 
     if(!snapshot || !snapshot.data){
@@ -262,6 +262,18 @@
       </div>`;
     }).join('');
 
+    const stateLabel =
+      mode === 'refresh'
+        ? '☁️ Pokazuję ostatnie dane · odświeżam w tle'
+        : '📴 Kopia offline';
+
+    const badge =
+      offline.querySelector('.badge');
+
+    if(badge){
+      badge.textContent = stateLabel;
+    }
+
     offlineContent.innerHTML = `
       <div class="offline-card">
         <h3>${current ? 'Dzień ' + esc(current.day) + ' · ' + esc(current.dateLabel) : 'Plan podróży'}</h3>
@@ -287,38 +299,60 @@
   function showOffline(){
     setup.hidden = true;
     frame.style.display = 'none';
+    frame.style.visibility = 'visible';
     offline.classList.add('show');
-    renderOffline();
+    renderOffline('offline');
     hideSplash();
   }
 
   function launch(url){
-    if(!navigator.onLine && getSnapshot()){
+    const snapshot = getSnapshot();
+
+    if(!navigator.onLine && snapshot){
       showOffline();
       return;
     }
 
-    offline.classList.remove('show');
     setup.hidden = true;
-    frame.style.display = 'block';
+
+    // Jeżeli mamy poprzedni zapis, pokazujemy go natychmiast,
+    // a właściwy Apps Script ładuje się niewidocznie w tle.
+    if(snapshot){
+      offline.classList.add('show');
+      renderOffline('refresh');
+      hideSplash();
+
+      frame.style.display = 'block';
+      frame.style.visibility = 'hidden';
+    }else{
+      offline.classList.remove('show');
+      frame.style.display = 'block';
+      frame.style.visibility = 'visible';
+    }
+
     frame.src = url;
 
     let loaded = false;
 
     frame.addEventListener('load', () => {
       loaded = true;
+      frame.style.visibility = 'visible';
+      offline.classList.remove('show');
       hideSplash();
     }, {once:true});
 
     setTimeout(() => {
       if(!loaded){
-        if(getSnapshot()){
-          showOffline();
+        if(snapshot){
+          frame.style.display = 'none';
+          frame.style.visibility = 'visible';
+          offline.classList.add('show');
+          renderOffline('offline');
         }else{
           hideSplash();
         }
       }
-    }, 8000);
+    }, 6500);
   }
 
   function saveAndLaunch(){
