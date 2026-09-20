@@ -1,0 +1,182 @@
+name: 03 Refresh Live Travel Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/03-refresh-live-data.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch weather and exchange rates
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import urllib.request
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          def get_json(url):
+              req=urllib.request.Request(
+                  url,
+                  headers={
+                      "Accept":"application/json",
+                      "User-Agent":"Bali2026TravelApp/1.0"
+                  }
+              )
+              with urllib.request.urlopen(req,timeout=20) as r:
+                  return json.loads(r.read().decode("utf-8"))
+
+          def weather_info(code):
+              code=int(code)
+              if code==0:
+                  return {"label":"Bezchmurnie","icon":"☀️"}
+              if code in (1,2):
+                  return {"label":"Częściowe zachmurzenie","icon":"🌤️"}
+              if code==3:
+                  return {"label":"Pochmurno","icon":"☁️"}
+              if code in (45,48):
+                  return {"label":"Mgła","icon":"🌫️"}
+              if code in (51,53,55,56,57):
+                  return {"label":"Mżawka","icon":"🌦️"}
+              if code in (61,63,65,66,67,80,81,82):
+                  return {"label":"Deszcz","icon":"🌧️"}
+              if code in (95,96,99):
+                  return {"label":"Burze","icon":"⛈️"}
+              return {"label":"Zmienne warunki","icon":"🌤️"}
+
+          weather_url=(
+              "https://api.open-meteo.com/v1/forecast"
+              "?latitude=-8.6500"
+              "&longitude=115.2167"
+              "&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m"
+              "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"
+              "&forecast_days=2"
+              "&timezone=Asia%2FMakassar"
+          )
+
+          rates_url=(
+              "https://api.frankfurter.dev/v1/latest"
+              "?base=PLN"
+              "&symbols=IDR%2CEUR%2CUSD%2CGBP%2CTRY%2CSGD%2CAUD"
+          )
+
+          previous={}
+          p=Path("live-data.json")
+          if p.exists():
+              try:
+                  previous=json.loads(p.read_text(encoding="utf-8"))
+              except Exception:
+                  previous={}
+
+          result={
+              "generatedAt":datetime.now(timezone.utc).isoformat(),
+              "weather":previous.get("weather"),
+              "currencyRates":previous.get("currencyRates")
+          }
+
+          errors=[]
+
+          try:
+              data=get_json(weather_url)
+              current=data["current"]
+              daily=data["daily"]
+              now_info=weather_info(current["weather_code"])
+              tomorrow_info=weather_info(daily["weather_code"][1])
+
+              result["weather"]={
+                  "location":"Bali · Denpasar",
+                  "updatedAt":current.get("time",""),
+                  "current":{
+                      "temperature":float(current["temperature_2m"]),
+                      "feelsLike":float(current["apparent_temperature"]),
+                      "humidity":float(current["relative_humidity_2m"]),
+                      "wind":float(current["wind_speed_10m"]),
+                      "label":now_info["label"],
+                      "icon":now_info["icon"]
+                  },
+                  "tomorrow":{
+                      "date":daily["time"][1],
+                      "min":float(daily["temperature_2m_min"][1]),
+                      "max":float(daily["temperature_2m_max"][1]),
+                      "rainProbability":float(daily["precipitation_probability_max"][1]),
+                      "label":tomorrow_info["label"],
+                      "icon":tomorrow_info["icon"]
+                  },
+                  "source":"Open-Meteo"
+              }
+          except Exception as e:
+              errors.append("weather: "+repr(e))
+
+          try:
+              data=get_json(rates_url)
+              rates={"PLN":{"rate":1,"unit":1}}
+              for code in ["IDR","EUR","USD","GBP","TRY","SGD","AUD"]:
+                  value=float(data["rates"][code])
+                  if value>0:
+                      rates[code]={"rate":value,"unit":1}
+
+              if not all(k in rates for k in ["IDR","EUR","USD"]):
+                  raise RuntimeError("missing essential rates")
+
+              result["currencyRates"]={
+                  "date":data.get("date",""),
+                  "nextUpdate":"",
+                  "source":"Frankfurter / ECB",
+                  "base":"PLN",
+                  "rates":rates
+              }
+          except Exception as e:
+              errors.append("currency: "+repr(e))
+
+          if not result.get("weather"):
+              raise SystemExit("No weather data available and no previous fallback")
+
+          rates=result.get("currencyRates") or {}
+          if not (rates.get("rates") or {}).get("IDR"):
+              raise SystemExit("No IDR rate available and no previous fallback")
+
+          p.write_text(
+              json.dumps(result,ensure_ascii=False,indent=2)+"\n",
+              encoding="utf-8"
+          )
+
+          print(json.dumps({
+              "generatedAt":result["generatedAt"],
+              "weatherSource":result["weather"]["source"],
+              "weatherTemp":result["weather"]["current"]["temperature"],
+              "currencySource":result["currencyRates"]["source"],
+              "idrPerPln":result["currencyRates"]["rates"]["IDR"]["rate"],
+              "warnings":errors
+          },ensure_ascii=False,indent=2))
+          PY
+
+      - name: Validate live data
+        run: python3 -m json.tool live-data.json > /dev/null
+
+      - name: Commit refreshed data
+        shell: bash
+        run: |
+          if git diff --quiet -- live-data.json; then
+            echo "No live-data changes."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add live-data.json
+          git commit -m "Refresh Bali live weather and exchange rates"
+          git push
