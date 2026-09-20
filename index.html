@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F4F1E9">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Bali 2026">
+
+  <title>Bali 2026</title>
+
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="./logo-180.png">
+  <link rel="icon" type="image/png" href="./logo-180.png">
+
+  <style>
+    :root{
+      --bg:#F4F1E9;
+      --ink:#17211B;
+      --muted:#6C746F;
+      --accent:#1D6B52;
+      --card:#fff;
+      --line:#E2E6E2;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--ink);
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif}
+    body{overflow:hidden}
+    #appFrame{
+      position:fixed;inset:0;width:100%;height:100dvh;border:0;background:var(--bg);display:none;
+    }
+    .setup{
+      min-height:100dvh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:calc(28px + env(safe-area-inset-top)) 22px calc(28px + env(safe-area-inset-bottom));
+    }
+    .card{
+      width:min(520px,100%);
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:28px;
+      padding:24px;
+      box-shadow:0 18px 48px rgba(23,33,27,.10);
+    }
+    .logo{
+      width:112px;height:112px;border-radius:25px;display:block;margin:0 auto 18px;
+      box-shadow:0 10px 25px rgba(0,0,0,.10);
+    }
+    h1{font-size:30px;letter-spacing:-.8px;text-align:center;margin:0 0 8px}
+    p{color:var(--muted);line-height:1.45;margin:0 0 18px;text-align:center}
+    label{display:block;font-size:13px;font-weight:700;margin:15px 0 7px}
+    input{
+      width:100%;padding:14px 14px;border:1px solid var(--line);border-radius:14px;
+      background:#fff;color:var(--ink);font:inherit;outline:none;
+    }
+    button{
+      width:100%;border:0;border-radius:15px;padding:14px 16px;margin-top:14px;
+      background:var(--accent);color:#fff;font:inherit;font-weight:800;
+    }
+    .note{font-size:12px;color:var(--muted);margin-top:13px;text-align:left}
+    .error{display:none;margin-top:12px;padding:11px 12px;border-radius:12px;background:#fff0e8;color:#8a3d15;font-size:13px}
+    .splash{
+      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+      background:var(--bg);z-index:5;transition:opacity .25s ease;
+    }
+    .splash.hide{opacity:0;pointer-events:none}
+    .splash-inner{text-align:center}
+    .splash .logo{width:96px;height:96px}
+    .splash strong{display:block;font-size:22px;margin-top:2px}
+    .splash span{display:block;color:var(--muted);font-size:13px;margin-top:6px}
+  </style>
+</head>
+<body>
+
+  <div id="splash" class="splash">
+    <div class="splash-inner">
+      <img class="logo" src="./logo-180.png" alt="">
+      <strong>Bali 2026</strong>
+      <span>Ładowanie planu podróży…</span>
+    </div>
+  </div>
+
+  <section id="setup" class="setup" hidden>
+    <div class="card">
+      <img class="logo" src="./logo-180.png" alt="Bali 2026">
+      <h1>Bali 2026</h1>
+      <p>Jednorazowa konfiguracja aplikacji na tym urządzeniu.</p>
+
+      <label for="backendUrl">Adres wdrożonej aplikacji Google Apps Script</label>
+      <input id="backendUrl" type="url"
+             placeholder="https://script.google.com/macros/s/…/exec"
+             autocomplete="off" autocapitalize="off" spellcheck="false">
+
+      <button id="saveBtn" type="button">Uruchom aplikację</button>
+      <div id="error" class="error"></div>
+
+      <div class="note">
+        Wklej link do wdrożenia kończący się na <b>/exec</b>, nie link do edytora projektu.
+        Adres jest zapisywany wyłącznie lokalnie na tym iPhonie.
+      </div>
+    </div>
+  </section>
+
+  <iframe id="appFrame"
+          title="Bali 2026"
+          allow="clipboard-read; clipboard-write"
+          referrerpolicy="strict-origin-when-cross-origin"></iframe>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'bali2026_apps_script_exec_url';
+  const splash = document.getElementById('splash');
+  const setup = document.getElementById('setup');
+  const frame = document.getElementById('appFrame');
+  const input = document.getElementById('backendUrl');
+  const error = document.getElementById('error');
+  const saveBtn = document.getElementById('saveBtn');
+
+  const params = new URLSearchParams(location.search);
+  const forceSetup = params.get('setup') === '1';
+
+  function hideSplash(){
+    splash.classList.add('hide');
+    setTimeout(() => splash.style.display = 'none', 300);
+  }
+
+  function showSetup(saved=''){
+    frame.style.display = 'none';
+    setup.hidden = false;
+    input.value = saved;
+    hideSplash();
+  }
+
+  function validExecUrl(value){
+    try{
+      const u = new URL(value);
+      return u.protocol === 'https:' &&
+             u.hostname === 'script.google.com' &&
+             /\/macros\/s\/.+\/exec\/?$/.test(u.pathname);
+    }catch(e){
+      return false;
+    }
+  }
+
+  function launch(url){
+    setup.hidden = true;
+    frame.style.display = 'block';
+    frame.src = url;
+
+    let loaded = false;
+    frame.addEventListener('load', () => {
+      loaded = true;
+      hideSplash();
+    }, {once:true});
+
+    setTimeout(() => {
+      if(!loaded) hideSplash();
+    }, 3500);
+  }
+
+  function saveAndLaunch(){
+    const value = input.value.trim();
+    if(!validExecUrl(value)){
+      error.textContent = 'Wklej poprawny adres wdrożenia Google Apps Script kończący się na /exec.';
+      error.style.display = 'block';
+      return;
+    }
+    error.style.display = 'none';
+    localStorage.setItem(STORAGE_KEY, value);
+    launch(value);
+  }
+
+  saveBtn.addEventListener('click', saveAndLaunch);
+  input.addEventListener('keydown', e => {
+    if(e.key === 'Enter') saveAndLaunch();
+  });
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+
+  if(forceSetup || !saved){
+    showSetup(saved || '');
+  }else{
+    launch(saved);
+  }
+
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+})();
+</script>
+</body>
+</html>
