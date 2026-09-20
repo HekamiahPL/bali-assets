@@ -45,5 +45,13 @@ jobs:
           grep -q "manifest.webmanifest" index.html
           grep -q "BALI_SNAPSHOT" index.html
           grep -q "serviceWorker.register" index.html
+          grep -q "pointer-events:none" index.html
+          grep -q "BALI_SNAPSHOT" index.html
+          grep -q "googleusercontent.com" index.html
+          grep -q "frame.style.display = 'block'" index.html
+          if grep -q "event.source !== frame.contentWindow" index.html; then
+            echo "Blocking nested-frame source check is still present"
+            exit 1
+          fi
           grep -q "bali-2026-shell-v3" sw.js
-          echo "PWA sanity checks passed"
+          echo "PWA startup and sanity checks passed"
