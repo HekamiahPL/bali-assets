@@ -57,5 +57,6 @@ jobs:
             echo "Standalone PWA must not depend on google.script.run"
             exit 1
           fi
-          grep -q "bali-2026-shell-v5" sw.js
+          grep -Eq "bali-2026-shell-v[0-9]+" sw.js
+          grep -q "live-data.json" index.html
           echo "Standalone PWA startup and sanity checks passed"
