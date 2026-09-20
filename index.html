@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- BALI_BUILD: standalone-pwa-v1 -->
+<!-- BALI_BUILD: standalone-pwa-v2 -->
 <html lang="pl">
 <head>
   <meta charset="utf-8">
@@ -1950,7 +1950,69 @@ async function loadLiveWeather_() {
 }
 
 
+async function loadPublishedLiveData_() {
+
+  try {
+
+    const data =
+      await fetchJson_(
+        './live-data.json?ts=' +
+        Date.now(),
+        4500
+      );
+
+    if (!data) {
+      return false;
+    }
+
+    let changed = false;
+
+    const publishedRates =
+      data.currencyRates &&
+      data.currencyRates.rates
+        ? data.currencyRates.rates
+        : {};
+
+    if (
+      publishedRates.IDR &&
+      publishedRates.EUR &&
+      publishedRates.USD
+    ) {
+      APP.currencyRates =
+        data.currencyRates;
+
+      changed = true;
+    }
+
+    if (
+      data.weather &&
+      data.weather.current &&
+      data.weather.tomorrow
+    ) {
+      APP.weather =
+        data.weather;
+
+      changed = true;
+    }
+
+    return changed;
+
+  } catch(e) {
+
+    return false;
+
+  }
+
+}
+
+
 async function hydrateLiveExternalData_() {
+
+  // Najpierw czytamy ten sam origin co PWA. Dane są odświeżane
+  // przez GitHub Actions, więc iOS nie musi korzystać z CORS ani
+  // czekać na zewnętrzne API.
+  let changed =
+    await loadPublishedLiveData_();
 
   const rates =
     APP.currencyRates &&
@@ -1970,6 +2032,7 @@ async function hydrateLiveExternalData_() {
 
   const jobs = [];
 
+  // Bezpośrednie źródła zostają jako dodatkowy fallback.
   if (needsCurrency) {
     jobs.push(
       loadLiveCurrency_()
@@ -1983,7 +2046,7 @@ async function hydrateLiveExternalData_() {
   }
 
   if (!jobs.length) {
-    return false;
+    return changed;
   }
 
   const results =
@@ -1991,11 +2054,17 @@ async function hydrateLiveExternalData_() {
       jobs
     );
 
-  return results.some(
-    result =>
-      result.status === 'fulfilled' &&
-      result.value === true
-  );
+  if (
+    results.some(
+      result =>
+        result.status === 'fulfilled' &&
+        result.value === true
+    )
+  ) {
+    changed = true;
+  }
+
+  return changed;
 
 }
 
@@ -4729,7 +4798,7 @@ if (
       navigator
         .serviceWorker
         .register(
-          './sw.js?v=5'
+          './sw.js?v=6'
         )
         .catch(
           () => {}
