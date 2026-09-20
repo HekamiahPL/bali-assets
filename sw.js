@@ -1,4 +1,4 @@
-const CACHE = 'bali-2026-shell-v6';
+const CACHE = 'bali-2026-shell-v7';
 
 const ASSETS = [
   './',
