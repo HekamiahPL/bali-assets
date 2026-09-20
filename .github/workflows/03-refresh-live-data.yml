@@ -170,7 +170,7 @@ jobs:
       - name: Commit refreshed data
         shell: bash
         run: |
-          if git diff --quiet -- live-data.json; then
+          if [ -z "$(git status --porcelain -- live-data.json)" ]; then
             echo "No live-data changes."
             exit 0
           fi
