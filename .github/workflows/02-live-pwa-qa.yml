@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
     paths:
+      - "index.html"
+      - "sw.js"
+      - "manifest.webmanifest"
       - ".github/workflows/02-live-pwa-qa.yml"
 
 jobs:
