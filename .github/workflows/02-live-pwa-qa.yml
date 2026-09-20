@@ -149,11 +149,39 @@ jobs:
           assert.ok(costState.text.includes('Noclegi'));
 
           await page.$eval('.navbtn[data-tab="more"]',el=>el.click());
+
+          await page.waitForFunction(
+            () =>
+              document.querySelector('.navbtn.active')?.dataset.tab === 'more',
+            {timeout:1000}
+          );
+
+          await page.waitForFunction(
+            () => {
+              const text=document.querySelector('#content')?.innerText || '';
+              return text.includes('Centrum podróży') &&
+                     text.includes('Paszport Dawid') &&
+                     text.includes('Alarm ogólny');
+            },
+            {timeout:3000}
+          );
+
           const moreText=await page.$eval('#content',el=>el.innerText);
 
           assert.ok(moreText.includes('Centrum podróży'));
           assert.ok(moreText.includes('Paszport Dawid'));
           assert.ok(moreText.includes('Alarm ogólny'));
+
+          await page.$eval('.navbtn[data-tab="today"]',el=>el.click());
+
+          await page.waitForFunction(
+            () => {
+              const text=document.querySelector('#content')?.innerText || '';
+              return text.includes('Pogoda') &&
+                     !text.includes('Nie udało się teraz pobrać pogody');
+            },
+            {timeout:12000}
+          );
 
           const snapshot=await page.evaluate(
             ()=>Boolean(localStorage.getItem('bali2026_offline_snapshot_v3'))
