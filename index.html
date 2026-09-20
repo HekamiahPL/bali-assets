@@ -1217,6 +1217,12 @@
 const BACKEND_STORAGE_KEY =
   'bali2026_apps_script_exec_url';
 
+// Jeden aktualny backend produkcyjny.
+// Na urządzeniu zapisujemy prywatny klucz użytkownika, ale nie polegamy
+// już na starym deployment ID, który mógł zostać zapisany wcześniej.
+const CANONICAL_BACKEND_URL =
+  'https://script.google.com/macros/s/AKfycbydVtIrXLkpuVkdSXQoj19BIo4fDhvri6HYlykIPvgEzEcBT4I4zhDT4rkbMDfStM442g/exec';
+
 let BACKEND_URL = '';
 let ACCESS_KEY = '';
 
@@ -1246,14 +1252,30 @@ function loadBackendConfig_() {
         url.searchParams.get('key') || ''
       ).trim();
 
-    BACKEND_URL =
-      url.origin +
-      url.pathname;
+    if (!ACCESS_KEY) {
+      return false;
+    }
 
-    return Boolean(
-      ACCESS_KEY &&
-      BACKEND_URL
-    );
+    // Samonaprawa: nawet jeśli Kasia/Dawid mają zapisany stary adres
+    // deploymentu Apps Script, używamy bieżącego produkcyjnego backendu.
+    BACKEND_URL =
+      CANONICAL_BACKEND_URL;
+
+    const canonicalStored =
+      CANONICAL_BACKEND_URL +
+      '?key=' +
+      encodeURIComponent(
+        ACCESS_KEY
+      );
+
+    if (raw !== canonicalStored) {
+      localStorage.setItem(
+        BACKEND_STORAGE_KEY,
+        canonicalStored
+      );
+    }
+
+    return true;
 
   } catch(e) {
 
@@ -1558,6 +1580,22 @@ function showBackendSetup_() {
 
     }
   );
+
+}
+
+
+function resetBackendConnection_() {
+
+  try {
+    localStorage.removeItem(
+      BACKEND_STORAGE_KEY
+    );
+  } catch(e) {}
+
+  BACKEND_URL = '';
+  ACCESS_KEY = '';
+
+  showBackendSetup_();
 
 }
 
@@ -2389,6 +2427,10 @@ async function reloadData() {
         `<div class="card">
           <b>Nie udało się wczytać danych.</b>
           <p class="muted">${esc(e.message)}</p>
+          <div class="actions">
+            <button class="btn" type="button" onclick="reloadData()">Spróbuj ponownie</button>
+            <button class="btn ghost" type="button" onclick="resetBackendConnection_()">Napraw połączenie</button>
+          </div>
         </div>`;
 
   }
@@ -4798,7 +4840,7 @@ if (
       navigator
         .serviceWorker
         .register(
-          './sw.js?v=6'
+          './sw.js?v=7'
         )
         .catch(
           () => {}
