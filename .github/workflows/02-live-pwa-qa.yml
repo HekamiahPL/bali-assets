@@ -58,7 +58,7 @@ jobs:
           const shell=await page.evaluate(()=>({
             nav:document.querySelectorAll('.navbtn').length,
             iframes:document.querySelectorAll('iframe').length,
-            build:document.documentElement.outerHTML.includes('standalone-pwa-v1'),
+            title:document.title,
             modal:document.querySelector('.modalback.show')?true:false
           }));
 
@@ -66,7 +66,7 @@ jobs:
 
           assert.equal(shell.nav,6,'must render six navigation buttons');
           assert.equal(shell.iframes,0,'standalone PWA must not use iframe UI');
-          assert.equal(shell.build,true,'standalone build marker missing');
+          assert.equal(shell.title,'Bali 2026','unexpected app title');
           assert.equal(shell.modal,false,'setup modal should not block configured device');
 
           // Critical regression test: tabs must react immediately,
