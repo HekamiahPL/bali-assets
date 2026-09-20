@@ -71,6 +71,37 @@
     .splash .logo{width:96px;height:96px}
     .splash strong{display:block;font-size:22px;margin-top:2px}
     .splash span{display:block;color:var(--muted);font-size:13px;margin-top:6px}
+
+    .offline{
+      min-height:100dvh;
+      display:none;
+      align-items:flex-start;
+      justify-content:center;
+      padding:calc(24px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom));
+      overflow:auto;
+      background:
+        radial-gradient(circle at top left, rgba(255,184,107,.20), transparent 30%),
+        radial-gradient(circle at top right, rgba(57,183,141,.14), transparent 28%),
+        var(--bg);
+    }
+    .offline.show{display:flex}
+    .offline-wrap{width:min(620px,100%)}
+    .offline-head{display:flex;align-items:center;gap:13px;margin-bottom:14px}
+    .offline-head .logo{width:64px;height:64px;margin:0;border-radius:18px}
+    .offline h2{margin:0;font-size:26px;letter-spacing:-.6px}
+    .badge{display:inline-flex;align-items:center;gap:6px;background:#fff1cf;color:#7d5700;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:800;margin-top:6px}
+    .offline-card{background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:22px;padding:17px;margin-top:12px;box-shadow:0 12px 35px rgba(23,33,27,.08)}
+    .offline-card h3{margin:0 0 9px;font-size:17px}
+    .offline-card .meta{color:var(--muted);font-size:12px;line-height:1.45}
+    .offline-card .plan{white-space:pre-line;line-height:1.55;font-size:14px;margin-top:10px}
+    .offline-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
+    .offline-actions button{margin-top:0}
+    .ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+    .contact{padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+    .contact:last-child{border-bottom:0}
+    .contact a{color:var(--accent);font-weight:800;text-decoration:none}
+    @media (max-width:480px){.offline-actions{grid-template-columns:1fr}}
+
   </style>
 </head>
 <body>
@@ -104,6 +135,24 @@
     </div>
   </section>
 
+
+  <section id="offline" class="offline">
+    <div class="offline-wrap">
+      <div class="offline-head">
+        <img class="logo" src="./logo-180.png" alt="">
+        <div>
+          <h2>Bali 2026</h2>
+          <div class="badge">📴 Kopia offline</div>
+        </div>
+      </div>
+      <div id="offlineContent"></div>
+      <div class="offline-actions">
+        <button id="retryBtn" type="button">Spróbuj połączyć ponownie</button>
+        <button id="setupBtn" class="ghost" type="button">Ustawienia aplikacji</button>
+      </div>
+    </div>
+  </section>
+
   <iframe id="appFrame"
           title="Bali 2026"
           allow="clipboard-read; clipboard-write"
@@ -112,15 +161,27 @@
 <script>
 (() => {
   const STORAGE_KEY = 'bali2026_apps_script_exec_url';
+  const SNAPSHOT_KEY = 'bali2026_parent_snapshot_v1';
+
   const splash = document.getElementById('splash');
   const setup = document.getElementById('setup');
+  const offline = document.getElementById('offline');
+  const offlineContent = document.getElementById('offlineContent');
   const frame = document.getElementById('appFrame');
   const input = document.getElementById('backendUrl');
   const error = document.getElementById('error');
   const saveBtn = document.getElementById('saveBtn');
+  const retryBtn = document.getElementById('retryBtn');
+  const setupBtn = document.getElementById('setupBtn');
 
   const params = new URLSearchParams(location.search);
   const forceSetup = params.get('setup') === '1';
+
+  function esc(value=''){
+    return String(value).replace(/[&<>"']/g, ch => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+    }[ch]));
+  }
 
   function hideSplash(){
     splash.classList.add('hide');
@@ -129,6 +190,7 @@
 
   function showSetup(saved=''){
     frame.style.display = 'none';
+    offline.classList.remove('show');
     setup.hidden = false;
     input.value = saved;
     hideSplash();
@@ -145,29 +207,129 @@
     }
   }
 
+  function getSnapshot(){
+    try{
+      const raw = localStorage.getItem(SNAPSHOT_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){
+      return null;
+    }
+  }
+
+  function baliTodayIso(){
+    try{
+      return new Intl.DateTimeFormat('en-CA',{
+        timeZone:'Asia/Makassar',
+        year:'numeric',month:'2-digit',day:'2-digit'
+      }).format(new Date());
+    }catch(e){
+      return new Date().toISOString().slice(0,10);
+    }
+  }
+
+  function renderOffline(){
+    const snapshot = getSnapshot();
+
+    if(!snapshot || !snapshot.data){
+      offlineContent.innerHTML = `
+        <div class="offline-card">
+          <h3>Brak zapisanej kopii</h3>
+          <div class="meta">
+            Połącz się z internetem i otwórz aplikację przynajmniej raz,
+            aby zapisać plan na tym iPhonie.
+          </div>
+        </div>`;
+      return;
+    }
+
+    const data = snapshot.data;
+    const today = baliTodayIso();
+    const trip = Array.isArray(data.trip) ? data.trip : [];
+    const current =
+      trip.find(x => x.isoDate === today) ||
+      trip.find(x => x.isoDate && x.isoDate > today) ||
+      trip[trip.length - 1] ||
+      null;
+
+    const emergency = Array.isArray(data.emergency) ? data.emergency : [];
+    const contacts = emergency.slice(0,6).map(item => {
+      const phone = String(item.phone || '').trim();
+      const first = phone.split('/')[0].trim().replace(/[^0-9+]/g,'');
+      return `<div class="contact">
+        <b>${esc(item.name || '')}</b>
+        ${phone ? ' · ' + esc(phone) : ''}
+        ${first ? `<br><a href="tel:${esc(first)}">Zadzwoń</a>` : ''}
+      </div>`;
+    }).join('');
+
+    offlineContent.innerHTML = `
+      <div class="offline-card">
+        <h3>${current ? 'Dzień ' + esc(current.day) + ' · ' + esc(current.dateLabel) : 'Plan podróży'}</h3>
+        ${current && current.hotel ? `<div class="meta">🏨 ${esc(current.hotel)}</div>` : ''}
+        ${current && current.hotelAddress ? `<div class="meta">📍 ${esc(current.hotelAddress)}</div>` : ''}
+        ${current && current.plan ? `<div class="plan">${esc(current.plan)}</div>` : '<div class="meta">Brak planu na ten dzień.</div>'}
+        ${current && current.dayNote ? `<div class="plan"><b>Notatka:</b> ${esc(current.dayNote)}</div>` : ''}
+      </div>
+
+      <div class="offline-card">
+        <h3>🆘 Najważniejsze kontakty</h3>
+        ${contacts || '<div class="meta">Brak zapisanych kontaktów awaryjnych.</div>'}
+      </div>
+
+      <div class="offline-card">
+        <div class="meta">
+          Kopia zapisana:
+          ${snapshot.savedAt ? esc(new Date(snapshot.savedAt).toLocaleString('pl-PL')) : '—'}
+        </div>
+      </div>`;
+  }
+
+  function showOffline(){
+    setup.hidden = true;
+    frame.style.display = 'none';
+    offline.classList.add('show');
+    renderOffline();
+    hideSplash();
+  }
+
   function launch(url){
+    if(!navigator.onLine && getSnapshot()){
+      showOffline();
+      return;
+    }
+
+    offline.classList.remove('show');
     setup.hidden = true;
     frame.style.display = 'block';
     frame.src = url;
 
     let loaded = false;
+
     frame.addEventListener('load', () => {
       loaded = true;
       hideSplash();
     }, {once:true});
 
     setTimeout(() => {
-      if(!loaded) hideSplash();
-    }, 3500);
+      if(!loaded){
+        if(getSnapshot()){
+          showOffline();
+        }else{
+          hideSplash();
+        }
+      }
+    }, 8000);
   }
 
   function saveAndLaunch(){
     const value = input.value.trim();
+
     if(!validExecUrl(value)){
       error.textContent = 'Wklej poprawny adres wdrożenia Google Apps Script kończący się na /exec.';
       error.style.display = 'block';
       return;
     }
+
     error.style.display = 'none';
     localStorage.setItem(STORAGE_KEY, value);
     launch(value);
@@ -178,10 +340,42 @@
     if(e.key === 'Enter') saveAndLaunch();
   });
 
+  retryBtn.addEventListener('click', () => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if(saved) launch(saved);
+    else showSetup();
+  });
+
+  setupBtn.addEventListener('click', () => {
+    showSetup(localStorage.getItem(STORAGE_KEY) || '');
+  });
+
+  window.addEventListener('message', event => {
+    if(event.source !== frame.contentWindow) return;
+
+    const msg = event.data;
+    if(!msg || msg.type !== 'BALI_SNAPSHOT' || !msg.snapshot || !msg.snapshot.data) return;
+
+    try{
+      localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(msg.snapshot));
+    }catch(e){}
+  });
+
+  window.addEventListener('offline', () => {
+    if(getSnapshot()) showOffline();
+  });
+
+  window.addEventListener('online', () => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if(saved) launch(saved);
+  });
+
   const saved = localStorage.getItem(STORAGE_KEY);
 
   if(forceSetup || !saved){
     showSetup(saved || '');
+  }else if(!navigator.onLine && getSnapshot()){
+    showOffline();
   }else{
     launch(saved);
   }
