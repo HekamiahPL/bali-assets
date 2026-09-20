@@ -1,0 +1,49 @@
+name: 01 QA Bali PWA
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "index.html"
+      - "sw.js"
+      - "manifest.webmanifest"
+      - ".github/workflows/01-qa.yml"
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract and check JavaScript from index
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html=Path("index.html").read_text(encoding="utf-8")
+          scripts=re.findall(r"<script(?:\s[^>]*)?>([\s\S]*?)</script>",html,flags=re.I)
+          if not scripts:
+              raise SystemExit("No script blocks found")
+          Path("/tmp/pwa-index.js").write_text("\n".join(scripts),encoding="utf-8")
+          print("script blocks:",len(scripts))
+          PY
+          node --check /tmp/pwa-index.js
+
+      - name: Check service worker syntax
+        run: node --check sw.js
+
+      - name: Validate manifest JSON
+        run: python3 -m json.tool manifest.webmanifest > /dev/null
+
+      - name: Check required PWA features
+        shell: bash
+        run: |
+          grep -q "apple-touch-icon" index.html
+          grep -q "manifest.webmanifest" index.html
+          grep -q "BALI_SNAPSHOT" index.html
+          grep -q "serviceWorker.register" index.html
+          grep -q "bali-2026-shell-v3" sw.js
+          echo "PWA sanity checks passed"
