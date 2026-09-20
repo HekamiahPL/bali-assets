@@ -43,15 +43,18 @@ jobs:
         run: |
           grep -q "apple-touch-icon" index.html
           grep -q "manifest.webmanifest" index.html
-          grep -q "BALI_SNAPSHOT" index.html
+          grep -q "standalone-pwa-v1" index.html
+          grep -q "bali2026_apps_script_exec_url" index.html
+          grep -q "__baliJsonp_" index.html
+          grep -q "initBottomNavigation_" index.html
           grep -q "serviceWorker.register" index.html
-          grep -q "pointer-events:none" index.html
-          grep -q "BALI_SNAPSHOT" index.html
-          grep -q "googleusercontent.com" index.html
-          grep -q "frame.style.display = 'block'" index.html
-          if grep -q "event.source !== frame.contentWindow" index.html; then
-            echo "Blocking nested-frame source check is still present"
+          if grep -q "<iframe" index.html; then
+            echo "Standalone PWA must not depend on iframe UI"
             exit 1
           fi
-          grep -q "bali-2026-shell-v3" sw.js
-          echo "PWA startup and sanity checks passed"
+          if grep -q "google.script.run" index.html; then
+            echo "Standalone PWA must not depend on google.script.run"
+            exit 1
+          fi
+          grep -q "bali-2026-shell-v5" sw.js
+          echo "Standalone PWA startup and sanity checks passed"
