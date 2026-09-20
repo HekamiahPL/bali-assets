@@ -1,0 +1,154 @@
+name: 02 Live Standalone PWA QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/02-live-pwa-qa.yml"
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - run: npm install --no-save puppeteer-core@24
+
+      - name: Exercise live GitHub Pages app
+        shell: bash
+        run: |
+          cat > live-pwa.mjs <<'NODE'
+          import puppeteer from 'puppeteer-core';
+          import assert from 'node:assert/strict';
+
+          const browser=await puppeteer.launch({
+            executablePath:'/usr/bin/google-chrome',
+            headless:true,
+            args:['--no-sandbox','--disable-dev-shm-usage','--disable-gpu']
+          });
+
+          const page=await browser.newPage();
+          const errors=[];
+
+          page.on('pageerror',e=>errors.push('pageerror: '+e.message));
+          page.on('console',m=>{
+            if(m.type()==='error') errors.push('console: '+m.text());
+          });
+
+          const backend='https://script.google.com/macros/s/AKfycbydVtIrXLkpuVkdSXQoj19BIo4fDhvri6HYlykIPvgEzEcBT4I4zhDT4rkbMDfStM442g/exec?key=BALI-LIVE-QA-2026-09-20-X9';
+
+          await page.evaluateOnNewDocument((backend)=>{
+            localStorage.setItem('bali2026_apps_script_exec_url',backend);
+          },backend);
+
+          const start=Date.now();
+
+          await page.goto(
+            'https://hekamiahpl.github.io/bali-assets/?qa=standalone-v1',
+            {waitUntil:'domcontentloaded',timeout:30000}
+          );
+
+          const domMs=Date.now()-start;
+          console.log('DOMContentLoaded ms',domMs);
+
+          await page.waitForSelector('.navbtn',{timeout:5000});
+
+          const shell=await page.evaluate(()=>({
+            nav:document.querySelectorAll('.navbtn').length,
+            iframes:document.querySelectorAll('iframe').length,
+            build:document.documentElement.outerHTML.includes('standalone-pwa-v1'),
+            modal:document.querySelector('.modalback.show')?true:false
+          }));
+
+          console.log('shell',shell);
+
+          assert.equal(shell.nav,6,'must render six navigation buttons');
+          assert.equal(shell.iframes,0,'standalone PWA must not use iframe UI');
+          assert.equal(shell.build,true,'standalone build marker missing');
+          assert.equal(shell.modal,false,'setup modal should not block configured device');
+
+          // Critical regression test: tabs must react immediately,
+          // before Google Sheets finishes loading.
+          for(const tab of ['plan','checklist','transport','costs','more','today']){
+            const t0=Date.now();
+
+            await page.$eval(
+              '.navbtn[data-tab="'+tab+'"]',
+              el=>el.click()
+            );
+
+            await page.waitForFunction(
+              expected =>
+                document.querySelector('.navbtn.active')?.dataset.tab===expected,
+              {timeout:1000},
+              tab
+            );
+
+            console.log('tab',tab,'ms',Date.now()-t0);
+          }
+
+          // Wait for real production backend data.
+          await page.waitForFunction(
+            () => {
+              const text=document.querySelector('#subtitle')?.textContent || '';
+              return text.includes('dane aktualne');
+            },
+            {timeout:30000}
+          );
+
+          await page.$eval('.navbtn[data-tab="plan"]',el=>el.click());
+          await new Promise(r=>setTimeout(r,200));
+
+          const planText=await page.$eval('#content',el=>el.innerText);
+          assert.ok(planText.includes('Cała podróż'),'plan screen missing');
+          assert.ok(planText.includes('Tropical Bali Hotel'),'real trip data missing');
+          assert.ok(planText.includes('Google Maps'),'hotel Maps action missing');
+          assert.ok(planText.includes('Trasa dnia'),'day route action missing');
+
+          await page.$eval('.navbtn[data-tab="costs"]',el=>el.click());
+
+          await page.waitForFunction(
+            () => {
+              const text=document.querySelector('#content')?.innerText || '';
+              return text.includes('Tropical Bali Hotel') &&
+                     text.includes('Przelicznik walut');
+            },
+            {timeout:5000}
+          );
+
+          await page.waitForFunction(
+            () => {
+              const text=document.querySelector('#convResult')?.innerText || '';
+              return text && !text.includes('brak kursu') && !text.includes('—');
+            },
+            {timeout:12000}
+          );
+
+          const costsText=await page.$eval('#content',el=>el.innerText);
+          assert.ok(costsText.includes('Budżet podróży'));
+          assert.ok(costsText.includes('Noclegi'));
+
+          await page.$eval('.navbtn[data-tab="more"]',el=>el.click());
+          const moreText=await page.$eval('#content',el=>el.innerText);
+
+          assert.ok(moreText.includes('Centrum podróży'));
+          assert.ok(moreText.includes('Paszport Dawid'));
+          assert.ok(moreText.includes('Alarm ogólny'));
+
+          const snapshot=await page.evaluate(
+            ()=>Boolean(localStorage.getItem('bali2026_offline_snapshot_v3'))
+          );
+
+          assert.equal(snapshot,true,'offline snapshot was not saved');
+
+          if(errors.length){
+            throw new Error(errors.join('\n'));
+          }
+
+          console.log('LIVE STANDALONE PWA QA PASSED');
+          await browser.close();
+          NODE
+
+          node live-pwa.mjs
