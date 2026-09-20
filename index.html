@@ -1,424 +1,4678 @@
 <!doctype html>
+<!-- BALI_BUILD: standalone-pwa-v1 -->
 <html lang="pl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#F4F1E9">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <!-- iOS / PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Bali 2026">
+  <meta name="theme-color" content="#F4F1E9">
+  <link rel="manifest" href="./manifest.webmanifest">
+
+  <!-- IKONA ŻÓŁWIKA -->
+<link rel="apple-touch-icon"
+      sizes="180x180"
+      href="./logo-180.png">
+
+<meta name="apple-mobile-web-app-title" content="Bali 2026">
+<meta name="apple-mobile-web-app-capable" content="yes">
 
   <title>Bali 2026</title>
 
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="apple-touch-icon" sizes="180x180" href="./logo-180.png">
-  <link rel="icon" type="image/png" href="./logo-180.png">
-
   <style>
-    :root{
+    :root {
       --bg:#F4F1E9;
+      --card:#FFFFFF;
       --ink:#17211B;
-      --muted:#6C746F;
+      --muted:#68736C;
       --accent:#1D6B52;
-      --card:#fff;
-      --line:#E2E6E2;
+      --accent-soft:#DCEBE4;
+      --sand:#EAD8B5;
+      --warning:#8A5A00;
+      --warning-bg:#FFF0CB;
+      --line:#E4E7E3;
+      --shadow:0 10px 30px rgba(23,33,27,.08);
+      --radius:22px;
     }
-    *{box-sizing:border-box}
-    html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--ink);
-      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif}
-    body{overflow:hidden}
-    #appFrame{
-      position:fixed;inset:0;width:100%;height:100dvh;border:0;background:var(--bg);display:none;
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:#101512;
+        --card:#18201C;
+        --ink:#F3F7F4;
+        --muted:#A7B1AA;
+        --accent:#5CC89B;
+        --accent-soft:#203A30;
+        --sand:#4B3C26;
+        --warning:#FFD37A;
+        --warning-bg:#3F3118;
+        --line:#2A342E;
+        --shadow:0 10px 30px rgba(0,0,0,.26);
+      }
     }
-    .setup{
-      min-height:100dvh;
+
+    * {
+      box-sizing:border-box;
+    }
+
+    html,
+    body {
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;
+    }
+
+    body {
+      padding-bottom:calc(90px + env(safe-area-inset-bottom));
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font:inherit;
+    }
+
+    .app {
+      max-width:680px;
+      margin:0 auto;
+      min-height:100vh;
+    }
+
+    .topbar {
+      position:sticky;
+      top:0;
+      z-index:20;
+      backdrop-filter:blur(18px);
+      background:color-mix(in srgb, var(--bg) 84%, transparent);
+      padding:calc(14px + env(safe-area-inset-top)) 18px 12px;
+      border-bottom:1px solid color-mix(in srgb, var(--line) 70%, transparent);
+    }
+
+    .brandrow {
       display:flex;
       align-items:center;
-      justify-content:center;
-      padding:calc(28px + env(safe-area-inset-top)) 22px calc(28px + env(safe-area-inset-bottom));
+      justify-content:space-between;
+      gap:12px;
     }
-    .card{
-      width:min(520px,100%);
+
+    h1 {
+      font-size:28px;
+      line-height:1;
+      margin:0;
+      letter-spacing:-.8px;
+    }
+
+    .sub {
+      color:var(--muted);
+      font-size:13px;
+      margin-top:6px;
+    }
+
+    .iconbtn {
+      border:0;
       background:var(--card);
+      color:var(--ink);
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      box-shadow:var(--shadow);
+      font-size:19px;
+    }
+
+    main {
+      padding:18px;
+    }
+
+    .hero {
+      background:linear-gradient(145deg,var(--accent-soft),var(--card));
       border:1px solid var(--line);
       border-radius:28px;
-      padding:24px;
-      box-shadow:0 18px 48px rgba(23,33,27,.10);
+      padding:20px;
+      box-shadow:var(--shadow);
+      margin-bottom:16px;
     }
-    .logo{
-      width:112px;height:112px;border-radius:25px;display:block;margin:0 auto 18px;
-      box-shadow:0 10px 25px rgba(0,0,0,.10);
-    }
-    h1{font-size:30px;letter-spacing:-.8px;text-align:center;margin:0 0 8px}
-    p{color:var(--muted);line-height:1.45;margin:0 0 18px;text-align:center}
-    label{display:block;font-size:13px;font-weight:700;margin:15px 0 7px}
-    input{
-      width:100%;padding:14px 14px;border:1px solid var(--line);border-radius:14px;
-      background:#fff;color:var(--ink);font:inherit;outline:none;
-    }
-    button{
-      width:100%;border:0;border-radius:15px;padding:14px 16px;margin-top:14px;
-      background:var(--accent);color:#fff;font:inherit;font-weight:800;
-    }
-    .note{font-size:12px;color:var(--muted);margin-top:13px;text-align:left}
-    .error{display:none;margin-top:12px;padding:11px 12px;border-radius:12px;background:#fff0e8;color:#8a3d15;font-size:13px}
-    .splash{
-      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-      background:var(--bg);z-index:5;transition:opacity .25s ease;
-      pointer-events:none;
-    }
-    .splash.hide{opacity:0;pointer-events:none}
-    .splash-inner{text-align:center}
-    .splash .logo{width:96px;height:96px}
-    .splash strong{display:block;font-size:22px;margin-top:2px}
-    .splash span{display:block;color:var(--muted);font-size:13px;margin-top:6px}
 
-    .offline{
-      min-height:100dvh;
-      display:none;
+    .eyebrow {
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      font-size:11px;
+      font-weight:800;
+      color:var(--accent);
+    }
+
+    .hero h2 {
+      font-size:28px;
+      margin:7px 0 6px;
+      letter-spacing:-.6px;
+    }
+
+    .hero p {
+      margin:0;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .chips {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .chip {
+      background:var(--card);
+      border:1px solid var(--line);
+      padding:8px 11px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:650;
+    }
+
+    .section-title {
+      font-size:18px;
+      margin:22px 2px 10px;
+      letter-spacing:-.3px;
+    }
+
+    .card {
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px;
+      margin-bottom:12px;
+      box-shadow:var(--shadow);
+    }
+
+    .date-row {
+      display:flex;
       align-items:flex-start;
-      justify-content:center;
-      padding:calc(24px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom));
-      overflow:auto;
-      background:
-        radial-gradient(circle at top left, rgba(255,184,107,.20), transparent 30%),
-        radial-gradient(circle at top right, rgba(57,183,141,.14), transparent 28%),
-        var(--bg);
+      justify-content:space-between;
+      gap:10px;
     }
-    .offline.show{display:flex}
-    .offline-wrap{width:min(620px,100%)}
-    .offline-head{display:flex;align-items:center;gap:13px;margin-bottom:14px}
-    .offline-head .logo{width:64px;height:64px;margin:0;border-radius:18px}
-    .offline h2{margin:0;font-size:26px;letter-spacing:-.6px}
-    .badge{display:inline-flex;align-items:center;gap:6px;background:#fff1cf;color:#7d5700;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:800;margin-top:6px}
-    .offline-card{background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:22px;padding:17px;margin-top:12px;box-shadow:0 12px 35px rgba(23,33,27,.08)}
-    .offline-card h3{margin:0 0 9px;font-size:17px}
-    .offline-card .meta{color:var(--muted);font-size:12px;line-height:1.45}
-    .offline-card .plan{white-space:pre-line;line-height:1.55;font-size:14px;margin-top:10px}
-    .offline-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}
-    .offline-actions button{margin-top:0}
-    .ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
-    .contact{padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
-    .contact:last-child{border-bottom:0}
-    .contact a{color:var(--accent);font-weight:800;text-decoration:none}
-    @media (max-width:480px){.offline-actions{grid-template-columns:1fr}}
 
+    .daybadge {
+      font-size:11px;
+      font-weight:800;
+      color:var(--accent);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .date {
+      font-weight:800;
+      font-size:17px;
+      margin-top:3px;
+    }
+
+    .plan {
+      white-space:pre-line;
+      color:var(--ink);
+      line-height:1.5;
+      font-size:14px;
+      margin-top:13px;
+    }
+
+    .hotel {
+      margin-top:14px;
+      padding-top:12px;
+      border-top:1px solid var(--line);
+    }
+
+    .hotel strong {
+      display:block;
+      font-size:14px;
+    }
+
+    .muted {
+      color:var(--muted);
+    }
+
+    .actions {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    .btn {
+      border:0;
+      border-radius:14px;
+      padding:11px 13px;
+      font-weight:750;
+      background:var(--accent);
+      color:white;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      min-height:42px;
+    }
+
+    .btn.secondary {
+      background:var(--accent-soft);
+      color:var(--accent);
+    }
+
+    .btn.ghost {
+      background:transparent;
+      color:var(--ink);
+      border:1px solid var(--line);
+    }
+
+    .btn.small {
+      padding:8px 10px;
+      min-height:34px;
+      font-size:12px;
+    }
+
+    .progress {
+      height:9px;
+      background:var(--line);
+      border-radius:999px;
+      overflow:hidden;
+      margin-top:10px;
+    }
+
+    .progress > span {
+      display:block;
+      height:100%;
+      background:var(--accent);
+      border-radius:999px;
+    }
+
+    .checkrow {
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:13px 0;
+      border-bottom:1px solid var(--line);
+    }
+
+    .checkrow:last-child {
+      border-bottom:0;
+    }
+
+    .checkrow input {
+      width:22px;
+      height:22px;
+      accent-color:var(--accent);
+      margin-top:1px;
+    }
+
+    .checktitle {
+      font-weight:700;
+      font-size:14px;
+      line-height:1.35;
+    }
+
+    .checkmeta {
+      color:var(--muted);
+      font-size:12px;
+      margin-top:4px;
+    }
+
+    .done .checktitle {
+      text-decoration:line-through;
+      opacity:.55;
+    }
+
+    .transport {
+      background:var(--accent-soft);
+      border-radius:16px;
+      padding:12px;
+      margin-top:12px;
+      font-size:13px;
+      line-height:1.45;
+      white-space:pre-line;
+    }
+
+    .warning {
+      background:var(--warning-bg);
+      color:var(--warning);
+      border-radius:16px;
+      padding:12px;
+      font-size:13px;
+      margin:10px 0;
+    }
+
+    .empty {
+      text-align:center;
+      color:var(--muted);
+      padding:36px 12px;
+    }
+
+    .bottomnav {
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:0;
+      z-index:30;
+      width:min(680px,100%);
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      border-top:1px solid var(--line);
+      background:color-mix(in srgb,var(--card) 92%,transparent);
+      backdrop-filter:blur(20px);
+      padding:7px 6px calc(7px + env(safe-area-inset-bottom));
+    }
+
+    .navbtn {
+      border:0;
+      background:transparent;
+      color:var(--muted);
+      padding:7px 2px;
+      font-size:10px;
+      font-weight:700;
+      cursor:pointer;
+      touch-action:manipulation;
+      pointer-events:auto;
+      -webkit-user-select:none;
+      user-select:none;
+    }
+
+    .navbtn span {
+      display:block;
+      font-size:20px;
+      margin-bottom:2px;
+    }
+
+    .navbtn.active {
+      color:var(--accent);
+    }
+
+    .field {
+      margin-bottom:12px;
+    }
+
+    .field label {
+      display:block;
+      font-weight:700;
+      font-size:12px;
+      margin-bottom:6px;
+    }
+
+    textarea,
+    input,
+    select {
+      width:100%;
+      border:1px solid var(--line);
+      background:var(--card);
+      color:var(--ink);
+      border-radius:14px;
+      padding:12px;
+      outline:none;
+    }
+
+    textarea {
+      min-height:105px;
+      resize:vertical;
+    }
+
+    .plan-route-sticky {
+      position:sticky;
+      top:calc(72px + env(safe-area-inset-top));
+      z-index:16;
+      margin:-2px -18px 16px;
+      padding:10px 12px 12px;
+      background:color-mix(in srgb,var(--bg) 94%,transparent);
+      backdrop-filter:blur(18px);
+      border-top:1px solid color-mix(in srgb,var(--line) 65%,transparent);
+      border-bottom:1px solid var(--line);
+    }
+
+    .plan-route-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin:0 4px 8px;
+    }
+
+    .plan-route-title {
+      font-size:12px;
+      font-weight:800;
+      color:var(--ink);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .plan-route-hint {
+      font-size:10px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .plan-route-track {
+      display:flex;
+      gap:7px;
+      overflow-x:auto;
+      overscroll-behavior-x:contain;
+      scrollbar-width:none;
+      padding:2px 4px 3px;
+      scroll-snap-type:x proximity;
+    }
+
+    .plan-route-track::-webkit-scrollbar {
+      display:none;
+    }
+
+    .route-day {
+      flex:0 0 auto;
+      min-width:42px;
+      height:42px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:var(--card);
+      color:var(--muted);
+      font-size:11px;
+      font-weight:850;
+      padding:0 8px;
+      scroll-snap-align:center;
+      box-shadow:0 4px 12px rgba(23,33,27,.04);
+    }
+
+    .route-day.active {
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+      transform:translateY(-1px);
+    }
+
+    .route-day.today {
+      box-shadow:0 0 0 2px var(--sand);
+    }
+
+    .weather-card {
+      background:linear-gradient(145deg,var(--card),var(--accent-soft));
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:16px;
+      margin-bottom:16px;
+      box-shadow:var(--shadow);
+    }
+
+    .weather-grid {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .weather-box {
+      background:color-mix(in srgb,var(--card) 88%,transparent);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:13px;
+    }
+
+    .weather-icon {
+      font-size:28px;
+      line-height:1;
+      margin-bottom:7px;
+    }
+
+    .weather-temp {
+      font-size:24px;
+      font-weight:850;
+      letter-spacing:-.5px;
+    }
+
+    .weather-label {
+      font-size:12px;
+      color:var(--muted);
+      margin-top:4px;
+      line-height:1.35;
+    }
+
+    .money-total {
+      font-size:34px;
+      font-weight:850;
+      letter-spacing:-1px;
+      margin-top:7px;
+    }
+
+    .costrow {
+      padding:13px 0;
+      border-bottom:1px solid var(--line);
+    }
+
+    .costrow:last-child {
+      border-bottom:0;
+    }
+
+    .costtop {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+
+    .costname {
+      font-weight:750;
+      font-size:14px;
+      line-height:1.35;
+    }
+
+    .costamount {
+      font-weight:850;
+      text-align:right;
+      white-space:nowrap;
+    }
+
+    .costpln {
+      color:var(--accent);
+      font-size:12px;
+      font-weight:750;
+      margin-top:3px;
+      text-align:right;
+    }
+
+    .converter-result {
+      margin-top:12px;
+      padding:16px;
+      border-radius:18px;
+      background:var(--accent-soft);
+      color:var(--accent);
+    }
+
+    .conversion-grid {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .conversion-box {
+      background:var(--card);
+      border:1px solid color-mix(in srgb,var(--accent) 20%,var(--line));
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .conversion-code {
+      font-size:11px;
+      font-weight:850;
+      letter-spacing:.08em;
+      color:var(--muted);
+      text-transform:uppercase;
+    }
+
+    .conversion-value {
+      margin-top:4px;
+      font-size:19px;
+      font-weight:850;
+      line-height:1.15;
+      color:var(--ink);
+      word-break:break-word;
+    }
+
+    .two-fields {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .modalback {
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.35);
+      z-index:50;
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+    }
+
+    .modalback.show {
+      display:flex;
+    }
+
+    .sheetmodal {
+      width:min(680px,100%);
+      max-height:86vh;
+      overflow:auto;
+      background:var(--bg);
+      border-radius:26px 26px 0 0;
+      padding:18px 18px calc(20px + env(safe-area-inset-bottom));
+    }
+
+    .handle {
+      width:44px;
+      height:5px;
+      border-radius:99px;
+      background:var(--line);
+      margin:0 auto 16px;
+    }
+
+    .loading {
+      padding:70px 20px;
+      text-align:center;
+      color:var(--muted);
+    }
+
+    .spinner {
+      width:28px;
+      height:28px;
+      border:3px solid var(--line);
+      border-top-color:var(--accent);
+      border-radius:50%;
+      margin:0 auto 14px;
+      animation:spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform:rotate(360deg)
+      }
+    }
   </style>
+<!-- BALI_FACELIFT_START -->
+<style id="bali-2026-facelift">
+  :root {
+    --bg:#F6F0E6;
+    --card:#FFFFFF;
+    --ink:#173128;
+    --muted:#6F7E77;
+    --accent:#168463;
+    --accent-2:#42B98E;
+    --accent-soft:#DDF3EA;
+    --sand:#EFD6AE;
+    --sun:#FFB86B;
+    --warning:#8A5A00;
+    --warning-bg:#FFF0CB;
+    --line:rgba(23,49,40,.09);
+    --shadow:0 18px 45px rgba(23,49,40,.10);
+    --shadow-soft:0 9px 28px rgba(23,49,40,.075);
+    --radius:24px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0E1714;
+      --card:#18231F;
+      --ink:#F3FAF7;
+      --muted:#A7B6AF;
+      --accent:#59D3A5;
+      --accent-2:#7CE4BC;
+      --accent-soft:#1C3B31;
+      --sand:#5D4931;
+      --sun:#FFBC75;
+      --warning:#FFD37A;
+      --warning-bg:#3E321D;
+      --line:rgba(255,255,255,.085);
+      --shadow:0 18px 45px rgba(0,0,0,.34);
+      --shadow-soft:0 9px 28px rgba(0,0,0,.22);
+    }
+  }
+
+  * {
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  html,
+  body {
+    min-height:100%;
+    background:
+      radial-gradient(circle at -10% -5%, rgba(255,184,107,.18), transparent 32%),
+      radial-gradient(circle at 110% 4%, rgba(66,185,142,.15), transparent 31%),
+      var(--bg);
+  }
+
+  body {
+    padding-bottom:calc(98px + env(safe-area-inset-bottom));
+  }
+
+  .app {
+    max-width:760px;
+  }
+
+  .topbar {
+    padding:calc(16px + env(safe-area-inset-top)) 18px 14px;
+    background:color-mix(in srgb,var(--bg) 78%,transparent);
+    border-bottom:1px solid color-mix(in srgb,var(--line) 78%,transparent);
+    backdrop-filter:blur(24px) saturate(150%);
+    -webkit-backdrop-filter:blur(24px) saturate(150%);
+  }
+
+  h1 {
+    font-size:30px;
+    font-weight:850;
+    letter-spacing:-1px;
+  }
+
+  .sub {
+    margin-top:7px;
+    font-size:12.5px;
+    line-height:1.35;
+  }
+
+  .iconbtn {
+    width:44px;
+    height:44px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:color-mix(in srgb,var(--card) 86%,transparent);
+    box-shadow:var(--shadow-soft);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    transition:transform .16s ease;
+  }
+
+  .iconbtn:active {
+    transform:scale(.96);
+  }
+
+  main {
+    padding:18px;
+  }
+
+  .hero {
+    position:relative;
+    overflow:hidden;
+    border-radius:30px;
+    padding:22px;
+    margin-bottom:18px;
+    border:1px solid color-mix(in srgb,var(--card) 55%,var(--line));
+    background:
+      radial-gradient(circle at 91% 5%, rgba(66,185,142,.22), transparent 31%),
+      radial-gradient(circle at 3% 100%, rgba(255,184,107,.18), transparent 35%),
+      linear-gradient(145deg,
+        color-mix(in srgb,var(--accent-soft) 66%,var(--card)),
+        color-mix(in srgb,var(--card) 94%,transparent)
+      );
+    box-shadow:var(--shadow);
+  }
+
+  .eyebrow {
+    display:inline-flex;
+    align-items:center;
+    min-height:30px;
+    padding:7px 10px;
+    border-radius:999px;
+    background:color-mix(in srgb,var(--card) 72%,transparent);
+    border:1px solid color-mix(in srgb,var(--card) 62%,var(--line));
+    letter-spacing:.13em;
+    font-weight:850;
+  }
+
+  .hero h2 {
+    font-size:30px;
+    line-height:1.08;
+    margin:12px 0 8px;
+    letter-spacing:-.85px;
+  }
+
+  .hero p {
+    line-height:1.55;
+    font-size:14px;
+  }
+
+  .card,
+  .weather-card {
+    border-radius:24px;
+    border:1px solid color-mix(in srgb,var(--card) 46%,var(--line));
+    background:color-mix(in srgb,var(--card) 90%,transparent);
+    box-shadow:var(--shadow-soft);
+    backdrop-filter:blur(16px) saturate(120%);
+    -webkit-backdrop-filter:blur(16px) saturate(120%);
+  }
+
+  .section-title {
+    margin:24px 3px 11px;
+    font-size:19px;
+    font-weight:820;
+    letter-spacing:-.38px;
+  }
+
+  .daybadge {
+    display:inline-flex;
+    align-items:center;
+    padding:7px 10px;
+    border-radius:999px;
+    background:color-mix(in srgb,var(--accent-soft) 78%,var(--card));
+    letter-spacing:.09em;
+  }
+
+  .date {
+    margin-top:9px;
+    font-size:18px;
+    letter-spacing:-.3px;
+  }
+
+  .plan {
+    line-height:1.62;
+    margin-top:14px;
+  }
+
+  .hotel {
+    margin-top:15px;
+    padding-top:13px;
+  }
+
+  .hotel strong {
+    margin-top:4px;
+    font-size:15px;
+  }
+
+  .actions {
+    gap:9px;
+    margin-top:14px;
+  }
+
+  .btn {
+    min-height:44px;
+    padding:11px 14px;
+    border-radius:15px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    box-shadow:0 9px 22px rgba(22,132,99,.18);
+    transition:transform .14s ease, opacity .14s ease;
+  }
+
+  .btn:active {
+    transform:translateY(1px) scale(.985);
+  }
+
+  .btn.secondary {
+    color:#73501E;
+    background:linear-gradient(135deg,
+      color-mix(in srgb,var(--sand) 78%,var(--card)),
+      color-mix(in srgb,var(--sand) 34%,var(--card))
+    );
+    box-shadow:none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .btn.secondary {
+      color:var(--ink);
+    }
+  }
+
+  .btn.ghost {
+    background:color-mix(in srgb,var(--card) 78%,transparent);
+    border:1px solid var(--line);
+    box-shadow:none;
+  }
+
+  .btn.small {
+    min-height:36px;
+    padding:9px 11px;
+    border-radius:13px;
+  }
+
+  .transport {
+    border:1px solid color-mix(in srgb,var(--accent) 14%,var(--line));
+    border-radius:18px;
+    padding:13px;
+    background:linear-gradient(135deg,
+      color-mix(in srgb,var(--accent-soft) 88%,var(--card)),
+      color-mix(in srgb,var(--card) 92%,transparent)
+    );
+  }
+
+  .progress {
+    height:10px;
+    background:color-mix(in srgb,var(--line) 82%,transparent);
+  }
+
+  .progress > span {
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  }
+
+  .checkrow {
+    padding:14px 0;
+  }
+
+  .checktitle {
+    font-weight:750;
+    line-height:1.42;
+  }
+
+  .checkmeta {
+    margin-top:5px;
+    line-height:1.42;
+  }
+
+  textarea,
+  input,
+  select {
+    padding:13px 14px;
+    border-radius:16px;
+    border:1px solid var(--line);
+    background:color-mix(in srgb,var(--card) 92%,transparent);
+  }
+
+  textarea:focus,
+  input:focus,
+  select:focus {
+    border-color:color-mix(in srgb,var(--accent) 44%,var(--line));
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-soft) 72%,transparent);
+  }
+
+  .bottomnav {
+    width:min(760px,100%);
+    padding:8px 7px calc(8px + env(safe-area-inset-bottom));
+    border-top:1px solid color-mix(in srgb,var(--line) 76%,transparent);
+    background:color-mix(in srgb,var(--card) 80%,transparent);
+    box-shadow:0 -10px 30px rgba(23,49,40,.07);
+    backdrop-filter:blur(26px) saturate(160%);
+    -webkit-backdrop-filter:blur(26px) saturate(160%);
+  }
+
+  .navbtn {
+    padding:8px 2px;
+    border-radius:15px;
+    transition:background .16s ease,color .16s ease,transform .16s ease;
+  }
+
+  .navbtn span {
+    margin-bottom:3px;
+  }
+
+  .navbtn.active {
+    background:color-mix(in srgb,var(--accent-soft) 70%,transparent);
+    color:var(--accent);
+  }
+
+  .navbtn:active {
+    transform:scale(.96);
+  }
+
+  .plan-route-sticky {
+    top:calc(76px + env(safe-area-inset-top));
+    background:color-mix(in srgb,var(--bg) 88%,transparent);
+    backdrop-filter:blur(22px) saturate(150%);
+    -webkit-backdrop-filter:blur(22px) saturate(150%);
+  }
+
+  .route-day {
+    border-radius:15px;
+    background:color-mix(in srgb,var(--card) 90%,transparent);
+    box-shadow:0 4px 13px rgba(23,49,40,.04);
+  }
+
+  .route-day.active {
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    border-color:transparent;
+    box-shadow:0 8px 18px rgba(22,132,99,.20);
+  }
+
+  .weather-card {
+    padding:17px;
+    background:
+      radial-gradient(circle at 96% 0%, rgba(255,184,107,.16), transparent 34%),
+      linear-gradient(145deg,
+        color-mix(in srgb,var(--card) 96%,transparent),
+        color-mix(in srgb,var(--accent-soft) 44%,var(--card))
+      );
+  }
+
+  .weather-box,
+  .conversion-box {
+    border-radius:17px;
+    background:color-mix(in srgb,var(--card) 89%,transparent);
+  }
+
+  .money-total {
+    font-size:36px;
+    letter-spacing:-1.2px;
+  }
+
+  .converter-result {
+    border:1px solid color-mix(in srgb,var(--accent) 12%,var(--line));
+    border-radius:19px;
+    background:linear-gradient(145deg,
+      color-mix(in srgb,var(--accent-soft) 88%,var(--card)),
+      color-mix(in srgb,var(--card) 92%,transparent)
+    );
+  }
+
+  .sheetmodal {
+    width:min(760px,100%);
+    border-radius:28px 28px 0 0;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(66,185,142,.12), transparent 30%),
+      var(--bg);
+    box-shadow:0 -18px 50px rgba(0,0,0,.14);
+  }
+
+  .modalback {
+    background:rgba(0,0,0,.28);
+    backdrop-filter:blur(5px);
+    -webkit-backdrop-filter:blur(5px);
+  }
+
+  .loading {
+    padding:82px 20px;
+  }
+
+  .spinner {
+    width:30px;
+    height:30px;
+    border-width:3px;
+  }
+
+  @media (max-width:560px) {
+    main {
+      padding:16px;
+    }
+
+    h1 {
+      font-size:28px;
+    }
+
+    .hero {
+      border-radius:25px;
+      padding:20px;
+    }
+
+    .hero h2 {
+      font-size:27px;
+    }
+
+    .card,
+    .weather-card {
+      border-radius:22px;
+    }
+  }
+</style>
+<!-- BALI_FACELIFT_END -->
+<!-- BALI_TRAVEL_TOOLS_START -->
+<style id="bali-travel-tools">
+  .info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .info-tile{border:1px solid var(--line);border-radius:18px;padding:14px;background:color-mix(in srgb,var(--card) 92%,transparent)}
+  .info-tile strong{display:block;font-size:17px;margin-top:4px}
+  .note-card{margin-top:13px;border-radius:17px;padding:12px 13px;background:color-mix(in srgb,var(--sand) 28%,var(--card));border:1px solid color-mix(in srgb,var(--sand) 44%,var(--line));font-size:13px;line-height:1.5}
+  .address-line{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.45}
+  .minirow{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line)}
+  .minirow:last-child{border-bottom:0}
+  .mini-main{min-width:0;flex:1}
+  .mini-title{font-weight:780;font-size:14px;line-height:1.35}
+  .mini-meta{color:var(--muted);font-size:12px;margin-top:4px;line-height:1.45}
+  .mini-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:11px;font-weight:760}
+  .offline-pill{background:var(--warning-bg);color:var(--warning)}
+  .quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .quick-grid .btn{width:100%}
+  .day-cost{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .day-cost:last-child{border-bottom:0}
+  .day-cost b{font-size:13px}
+  .day-cost span{font-size:12px;color:var(--muted);text-align:right}
+  .section-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:850;color:var(--accent);margin-bottom:3px}
+  .travel-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+  .travel-summary .info-tile{text-align:center;padding:11px 8px}
+  .travel-summary .info-tile strong{font-size:15px}
+  .bottomnav{
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    gap:2px;
+    padding-left:4px;
+    padding-right:4px;
+  }
+  .navbtn{
+    min-width:0;
+    font-size:9px;
+    padding-left:1px;
+    padding-right:1px;
+  }
+  .navbtn span{font-size:19px}
+  @media (max-width:520px){
+    .info-grid,.quick-grid{grid-template-columns:1fr}
+    .travel-summary{grid-template-columns:1fr 1fr 1fr}
+    .minirow{flex-direction:column}
+    .mini-actions{justify-content:flex-start}
+  }
+</style>
+<!-- BALI_TRAVEL_TOOLS_END -->
 </head>
+
 <body>
 
-  <div id="splash" class="splash">
-    <div class="splash-inner">
-      <img class="logo" src="./logo-180.png" alt="">
-      <strong>Bali 2026</strong>
-      <span>Ładowanie planu podróży…</span>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brandrow">
+
+      <div>
+        <h1>Bali 2026 🌺</h1>
+        <div class="sub" id="subtitle">
+          Plan podróży Dawida i Kasi
+        </div>
+      </div>
+
+      <button
+        class="iconbtn"
+        onclick="reloadData()"
+        aria-label="Odśwież">
+        ↻
+      </button>
+
     </div>
+  </header>
+
+  <main id="content">
+    <div class="loading">
+      <div class="spinner"></div>
+      Ładuję Wasz plan…
+    </div>
+  </main>
+
+  <nav class="bottomnav" id="bottomnav">
+
+    <button type="button" class="navbtn active" data-tab="today">
+      <span>☀️</span>
+      Dzisiaj
+    </button>
+
+    <button type="button" class="navbtn" data-tab="plan">
+      <span>🗺️</span>
+      Plan
+    </button>
+
+    <button type="button" class="navbtn" data-tab="checklist">
+      <span>✅</span>
+      Lista
+    </button>
+
+    <button type="button" class="navbtn" data-tab="transport">
+      <span>🚐</span>
+      Transport
+    </button>
+
+    <button type="button" class="navbtn" data-tab="costs">
+      <span>💰</span>
+      Koszty
+    </button>
+
+    <button type="button" class="navbtn" data-tab="more">
+      <span>•••</span>
+      Więcej
+    </button>
+
+  </nav>
+
+</div>
+
+
+<div class="modalback" id="modal">
+
+  <div class="sheetmodal">
+
+    <div class="handle"></div>
+
+    <div id="modalContent"></div>
+
   </div>
 
-  <section id="setup" class="setup" hidden>
-    <div class="card">
-      <img class="logo" src="./logo-180.png" alt="Bali 2026">
-      <h1>Bali 2026</h1>
-      <p>Jednorazowa konfiguracja aplikacji na tym urządzeniu.</p>
+</div>
 
-      <label for="backendUrl">Adres wdrożonej aplikacji Google Apps Script</label>
-      <input id="backendUrl" type="url"
-             placeholder="https://script.google.com/macros/s/…/exec"
-             autocomplete="off" autocapitalize="off" spellcheck="false">
-
-      <button id="saveBtn" type="button">Uruchom aplikację</button>
-      <div id="error" class="error"></div>
-
-      <div class="note">
-        Wklej link do wdrożenia kończący się na <b>/exec</b>, nie link do edytora projektu.
-        Adres jest zapisywany wyłącznie lokalnie na tym iPhonie.
-      </div>
-    </div>
-  </section>
-
-
-  <section id="offline" class="offline">
-    <div class="offline-wrap">
-      <div class="offline-head">
-        <img class="logo" src="./logo-180.png" alt="">
-        <div>
-          <h2>Bali 2026</h2>
-          <div class="badge">📴 Kopia offline</div>
-        </div>
-      </div>
-      <div id="offlineContent"></div>
-      <div class="offline-actions">
-        <button id="retryBtn" type="button">Spróbuj połączyć ponownie</button>
-        <button id="setupBtn" class="ghost" type="button">Ustawienia aplikacji</button>
-      </div>
-    </div>
-  </section>
-
-  <iframe id="appFrame"
-          title="Bali 2026"
-          allow="clipboard-read; clipboard-write"
-          referrerpolicy="strict-origin-when-cross-origin"></iframe>
 
 <script>
-(() => {
-  const STORAGE_KEY = 'bali2026_apps_script_exec_url';
-  const SNAPSHOT_KEY = 'bali2026_parent_snapshot_v1';
 
-  const splash = document.getElementById('splash');
-  const setup = document.getElementById('setup');
-  const offline = document.getElementById('offline');
-  const offlineContent = document.getElementById('offlineContent');
-  const frame = document.getElementById('appFrame');
-  const input = document.getElementById('backendUrl');
-  const error = document.getElementById('error');
-  const saveBtn = document.getElementById('saveBtn');
-  const retryBtn = document.getElementById('retryBtn');
-  const setupBtn = document.getElementById('setupBtn');
+const BACKEND_STORAGE_KEY =
+  'bali2026_apps_script_exec_url';
 
-  const params = new URLSearchParams(location.search);
-  const forceSetup = params.get('setup') === '1';
+let BACKEND_URL = '';
+let ACCESS_KEY = '';
 
-  function esc(value=''){
-    return String(value).replace(/[&<>"']/g, ch => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
-    }[ch]));
-  }
+function loadBackendConfig_() {
 
-  function hideSplash(){
-    splash.classList.add('hide');
-    setTimeout(() => splash.style.display = 'none', 300);
-  }
+  const raw =
+    localStorage.getItem(
+      BACKEND_STORAGE_KEY
+    ) || '';
 
-  function showSetup(saved=''){
-    frame.style.display = 'none';
-    offline.classList.remove('show');
-    setup.hidden = false;
-    input.value = saved;
-    hideSplash();
-  }
+  try {
 
-  function validExecUrl(value){
-    try{
-      const u = new URL(value);
-      return u.protocol === 'https:' &&
-             u.hostname === 'script.google.com' &&
-             /\/macros\/s\/.+\/exec\/?$/.test(u.pathname);
-    }catch(e){
+    const url =
+      new URL(raw);
+
+    if (
+      url.protocol !== 'https:' ||
+      url.hostname !== 'script.google.com' ||
+      !/\/macros\/s\/.+\/exec\/?$/
+        .test(url.pathname)
+    ) {
       return false;
     }
+
+    ACCESS_KEY =
+      String(
+        url.searchParams.get('key') || ''
+      ).trim();
+
+    BACKEND_URL =
+      url.origin +
+      url.pathname;
+
+    return Boolean(
+      ACCESS_KEY &&
+      BACKEND_URL
+    );
+
+  } catch(e) {
+
+    BACKEND_URL = '';
+    ACCESS_KEY = '';
+
+    return false;
+
   }
 
-  function getSnapshot(){
-    try{
-      const raw = localStorage.getItem(SNAPSHOT_KEY);
-      return raw ? JSON.parse(raw) : null;
-    }catch(e){
-      return null;
-    }
-  }
+}
 
-  function baliTodayIso(){
-    try{
-      return new Intl.DateTimeFormat('en-CA',{
-        timeZone:'Asia/Makassar',
-        year:'numeric',month:'2-digit',day:'2-digit'
-      }).format(new Date());
-    }catch(e){
-      return new Date().toISOString().slice(0,10);
-    }
-  }
+loadBackendConfig_();
 
-  function renderOffline(mode='offline'){
-    const snapshot = getSnapshot();
+let APP = {
+  trip:[],
+  checklist:[],
+  costs:[],
+  documents:[],
+  places:[],
+  emergency:[],
+  currencyRates:null,
+  weather:null,
+  accessPerson:'',
+  nowBali:null
+};
 
-    if(!snapshot || !snapshot.data){
-      offlineContent.innerHTML = `
-        <div class="offline-card">
-          <h3>Brak zapisanej kopii</h3>
-          <div class="meta">
-            Połącz się z internetem i otwórz aplikację przynajmniej raz,
-            aby zapisać plan na tym iPhonie.
-          </div>
-        </div>`;
-      return;
-    }
+const OFFLINE_KEY = 'bali2026_offline_snapshot_v3';
+let APP_OFFLINE = false;
 
-    const data = snapshot.data;
-    const today = baliTodayIso();
-    const trip = Array.isArray(data.trip) ? data.trip : [];
-    const current =
-      trip.find(x => x.isoDate === today) ||
-      trip.find(x => x.isoDate && x.isoDate > today) ||
-      trip[trip.length - 1] ||
-      null;
+const allowedTabs = ['today','plan','checklist','transport','costs','more'];
+const requestedTab = new URLSearchParams(window.location.search).get('tab');
+let currentTab = allowedTabs.includes(requestedTab) ? requestedTab : 'today';
 
-    const emergency = Array.isArray(data.emergency) ? data.emergency : [];
-    const contacts = emergency.slice(0,6).map(item => {
-      const phone = String(item.phone || '').trim();
-      const first = phone.split('/')[0].trim().replace(/[^0-9+]/g,'');
-      return `<div class="contact">
-        <b>${esc(item.name || '')}</b>
-        ${phone ? ' · ' + esc(phone) : ''}
-        ${first ? `<br><a href="tel:${esc(first)}">Zadzwoń</a>` : ''}
-      </div>`;
-    }).join('');
 
-    const stateLabel =
-      mode === 'refresh'
-        ? '☁️ Pokazuję ostatnie dane · odświeżam w tle'
-        : '📴 Kopia offline';
+function esc(s='') {
 
-    const badge =
-      offline.querySelector('.badge');
+  return String(s).replace(
+    /[&<>"']/g,
+    c => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#039;'
+    }[c])
+  );
 
-    if(badge){
-      badge.textContent = stateLabel;
-    }
+}
 
-    offlineContent.innerHTML = `
-      <div class="offline-card">
-        <h3>${current ? 'Dzień ' + esc(current.day) + ' · ' + esc(current.dateLabel) : 'Plan podróży'}</h3>
-        ${current && current.hotel ? `<div class="meta">🏨 ${esc(current.hotel)}</div>` : ''}
-        ${current && current.hotelAddress ? `<div class="meta">📍 ${esc(current.hotelAddress)}</div>` : ''}
-        ${current && current.plan ? `<div class="plan">${esc(current.plan)}</div>` : '<div class="meta">Brak planu na ten dzień.</div>'}
-        ${current && current.dayNote ? `<div class="plan"><b>Notatka:</b> ${esc(current.dayNote)}</div>` : ''}
-      </div>
 
-      <div class="offline-card">
-        <h3>🆘 Najważniejsze kontakty</h3>
-        ${contacts || '<div class="meta">Brak zapisanych kontaktów awaryjnych.</div>'}
-      </div>
+function nl(s='') {
 
-      <div class="offline-card">
-        <div class="meta">
-          Kopia zapisana:
-          ${snapshot.savedAt ? esc(new Date(snapshot.savedAt).toLocaleString('pl-PL')) : '—'}
-        </div>
-      </div>`;
-  }
+  return esc(s).replace(/\n/g,'<br>');
 
-  function showOffline(){
-    setup.hidden = true;
-    frame.style.display = 'none';
-    frame.style.visibility = 'visible';
-    offline.classList.add('show');
-    renderOffline('offline');
-    hideSplash();
-  }
+}
 
-  function launch(url){
-    const snapshot = getSnapshot();
 
-    if(!navigator.onLine && snapshot){
-      showOffline();
-      return;
-    }
+function api(name, ...args) {
 
-    setup.hidden = true;
+  return new Promise(
+    (resolve,reject) => {
 
-    // Przy połączeniu z internetem nigdy nie przykrywamy aplikacji
-    // żadnym ekranem oczekiwania. Iframe jest od razu widoczny i klikalny.
-    hideSplash();
-    offline.classList.remove('show');
+      if (
+        !BACKEND_URL ||
+        !ACCESS_KEY
+      ) {
 
-    frame.style.display = 'block';
-    frame.style.visibility = 'visible';
-    frame.style.pointerEvents = 'auto';
-    frame.src = url;
+        reject(
+          new Error(
+            'Brak konfiguracji połączenia z Google Apps Script.'
+          )
+        );
 
-    // Jeśli ładowanie potrwa dłużej, nie nakładamy warstwy nad aplikację.
-    // Apps Script ma własny nieblokujący stan synchronizacji.
-    frame.addEventListener('load', () => {
-      frame.style.display = 'block';
-      frame.style.visibility = 'visible';
-      frame.style.pointerEvents = 'auto';
-      offline.classList.remove('show');
-    }, {once:true});
-  }
+        return;
 
-  function saveAndLaunch(){
-    const value = input.value.trim();
+      }
 
-    if(!validExecUrl(value)){
-      error.textContent = 'Wklej poprawny adres wdrożenia Google Apps Script kończący się na /exec.';
-      error.style.display = 'block';
-      return;
-    }
+      const callback =
+        '__baliJsonp_' +
+        Date.now() +
+        '_' +
+        Math.random()
+          .toString(36)
+          .slice(2);
 
-    error.style.display = 'none';
-    localStorage.setItem(STORAGE_KEY, value);
-    launch(value);
-  }
+      const script =
+        document.createElement(
+          'script'
+        );
 
-  saveBtn.addEventListener('click', saveAndLaunch);
-  input.addEventListener('keydown', e => {
-    if(e.key === 'Enter') saveAndLaunch();
-  });
+      const cleanup =
+        () => {
 
-  retryBtn.addEventListener('click', () => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if(saved) launch(saved);
-    else showSetup();
-  });
+          try {
+            delete window[callback];
+          } catch(e) {
+            window[callback] =
+              undefined;
+          }
 
-  setupBtn.addEventListener('click', () => {
-    showSetup(localStorage.getItem(STORAGE_KEY) || '');
-  });
+          script.remove();
 
-  window.addEventListener('message', event => {
-    const msg = event.data;
+        };
 
-    if(
-      !msg ||
-      msg.type !== 'BALI_SNAPSHOT' ||
-      !msg.snapshot ||
-      !msg.snapshot.data
-    ) return;
+      const timer =
+        setTimeout(
+          () => {
 
-    // Apps Script potrafi opakować aplikację w dodatkową ramkę
-    // script.googleusercontent.com, więc event.source nie musi być
-    // bezpośrednio appFrame.contentWindow.
-    const origin = String(event.origin || '');
+            cleanup();
 
-    if(
-      origin &&
-      !origin.includes('script.google.com') &&
-      !origin.includes('googleusercontent.com')
-    ) return;
+            reject(
+              new Error(
+                'Google Sheets odpowiada zbyt długo.'
+              )
+            );
 
-    try{
-      localStorage.setItem(
-        SNAPSHOT_KEY,
-        JSON.stringify(msg.snapshot)
+          },
+          20000
+        );
+
+      window[callback] =
+        payload => {
+
+          clearTimeout(timer);
+          cleanup();
+
+          if (
+            payload &&
+            payload.ok
+          ) {
+
+            resolve(
+              payload.result
+            );
+
+          } else {
+
+            reject(
+              new Error(
+                payload &&
+                payload.error
+                  ? payload.error
+                  : 'Błąd API.'
+              )
+            );
+
+          }
+
+        };
+
+      script.onerror =
+        () => {
+
+          clearTimeout(timer);
+          cleanup();
+
+          reject(
+            new Error(
+              'Nie udało się połączyć z backendem podróży.'
+            )
+          );
+
+        };
+
+      const url =
+        new URL(
+          BACKEND_URL
+        );
+
+      url.searchParams.set(
+        'api',
+        '1'
       );
-    }catch(e){}
-  });
 
-  window.addEventListener('offline', () => {
-    if(getSnapshot()) showOffline();
-  });
+      url.searchParams.set(
+        'action',
+        name
+      );
 
-  window.addEventListener('online', () => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if(saved) launch(saved);
-  });
+      url.searchParams.set(
+        'key',
+        ACCESS_KEY
+      );
 
-  const saved = localStorage.getItem(STORAGE_KEY);
+      url.searchParams.set(
+        'args',
+        JSON.stringify(args)
+      );
 
-  if(forceSetup || !saved){
-    showSetup(saved || '');
-  }else if(!navigator.onLine && getSnapshot()){
-    showOffline();
-  }else{
-    launch(saved);
+      url.searchParams.set(
+        'callback',
+        callback
+      );
+
+      url.searchParams.set(
+        '_',
+        String(Date.now())
+      );
+
+      script.src =
+        url.toString();
+
+      script.async =
+        true;
+
+      document.head
+        .appendChild(script);
+
+    }
+  );
+
+}
+
+
+function showBackendSetup_() {
+
+  showModal(
+    `<h2>Połącz aplikację</h2>
+
+      <p class="muted">
+        Wklej prywatny adres Google Apps Script kończący się na
+        <b>/exec?key=…</b>. Adres zostanie zapisany tylko na tym urządzeniu.
+      </p>
+
+      <div class="field">
+        <label>Adres backendu</label>
+        <input
+          id="backendSetupUrl"
+          type="url"
+          autocomplete="off"
+          placeholder="https://script.google.com/macros/s/…/exec?key=…">
+      </div>
+
+      <div class="actions">
+        <button
+          class="btn"
+          type="button"
+          id="backendSetupSave">
+          Połącz
+        </button>
+      </div>`
+  );
+
+  const save =
+    document.getElementById(
+      'backendSetupSave'
+    );
+
+  if (!save) {
+    return;
   }
 
-  if('serviceWorker' in navigator){
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
-    });
+  save.addEventListener(
+    'click',
+    () => {
+
+      const input =
+        document.getElementById(
+          'backendSetupUrl'
+        );
+
+      const value =
+        String(
+          input ? input.value : ''
+        ).trim();
+
+      try {
+
+        const url =
+          new URL(value);
+
+        const key =
+          String(
+            url.searchParams.get('key') || ''
+          ).trim();
+
+        if (
+          url.protocol !== 'https:' ||
+          url.hostname !== 'script.google.com' ||
+          !/\/macros\/s\/.+\/exec\/?$/
+            .test(url.pathname) ||
+          !key
+        ) {
+          throw new Error();
+        }
+
+        localStorage.setItem(
+          BACKEND_STORAGE_KEY,
+          value
+        );
+
+        location.reload();
+
+      } catch(e) {
+
+        alert(
+          'Wklej poprawny prywatny adres aplikacji Apps Script.'
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+function migrateLegacySnapshot_() {
+
+  try {
+
+    if (
+      localStorage.getItem(
+        OFFLINE_KEY
+      )
+    ) {
+      return;
+    }
+
+    const legacy =
+      localStorage.getItem(
+        'bali2026_parent_snapshot_v1'
+      );
+
+    if (legacy) {
+      localStorage.setItem(
+        OFFLINE_KEY,
+        legacy
+      );
+    }
+
+  } catch(e) {}
+
+}
+
+
+/* BALI_LIVE_EXTERNAL_START */
+
+function weatherCodeInfoClient_(code) {
+
+  const c = Number(code);
+
+  if (c === 0) {
+    return { label:'Bezchmurnie', icon:'☀️' };
   }
-})();
+
+  if ([1,2].includes(c)) {
+    return { label:'Częściowe zachmurzenie', icon:'🌤️' };
+  }
+
+  if (c === 3) {
+    return { label:'Pochmurno', icon:'☁️' };
+  }
+
+  if ([45,48].includes(c)) {
+    return { label:'Mgła', icon:'🌫️' };
+  }
+
+  if ([51,53,55,56,57].includes(c)) {
+    return { label:'Mżawka', icon:'🌦️' };
+  }
+
+  if ([61,63,65,66,67,80,81,82].includes(c)) {
+    return { label:'Deszcz', icon:'🌧️' };
+  }
+
+  if ([95,96,99].includes(c)) {
+    return { label:'Burze', icon:'⛈️' };
+  }
+
+  return { label:'Zmienne warunki', icon:'🌤️' };
+
+}
+
+
+async function fetchJson_(url, timeoutMs=6500) {
+
+  const controller =
+    new AbortController();
+
+  const timer =
+    setTimeout(
+      () => controller.abort(),
+      timeoutMs
+    );
+
+  try {
+
+    const response =
+      await fetch(
+        url,
+        {
+          method:'GET',
+          mode:'cors',
+          cache:'no-store',
+          signal:controller.signal,
+          headers:{
+            'Accept':'application/json'
+          }
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        'HTTP ' + response.status
+      );
+    }
+
+    return await response.json();
+
+  } finally {
+
+    clearTimeout(timer);
+
+  }
+
+}
+
+
+async function loadLiveCurrency_() {
+
+  const supported =
+    [
+      'PLN',
+      'IDR',
+      'EUR',
+      'USD',
+      'GBP',
+      'TRY',
+      'SGD',
+      'AUD'
+    ];
+
+  // Provider 1: Frankfurter (bez klucza).
+  try {
+
+    const data =
+      await fetchJson_(
+        'https://api.frankfurter.dev/v1/latest' +
+        '?base=PLN' +
+        '&symbols=IDR,EUR,USD,GBP,TRY,SGD,AUD'
+      );
+
+    if (
+      data &&
+      data.rates
+    ) {
+
+      const rates = {
+        PLN:{ rate:1, unit:1 }
+      };
+
+      supported
+        .filter(code => code !== 'PLN')
+        .forEach(
+          code => {
+
+            const value =
+              Number(
+                data.rates[code]
+              );
+
+            if (
+              Number.isFinite(value) &&
+              value > 0
+            ) {
+              rates[code] = {
+                rate:value,
+                unit:1
+              };
+            }
+
+          }
+        );
+
+      if (
+        rates.IDR &&
+        rates.EUR &&
+        rates.USD
+      ) {
+
+        APP.currencyRates = {
+          date:data.date || '',
+          nextUpdate:'',
+          source:'Frankfurter',
+          base:'PLN',
+          rates
+        };
+
+        return true;
+
+      }
+
+    }
+
+  } catch(e) {}
+
+
+  // Provider 2: ExchangeRate-API jako zapasowy.
+  try {
+
+    const data =
+      await fetchJson_(
+        'https://open.er-api.com/v6/latest/PLN'
+      );
+
+    if (
+      data &&
+      data.result === 'success' &&
+      data.rates
+    ) {
+
+      const rates = {};
+
+      supported.forEach(
+        code => {
+
+          const value =
+            code === 'PLN'
+              ? 1
+              : Number(
+                  data.rates[code]
+                );
+
+          if (
+            Number.isFinite(value) &&
+            value > 0
+          ) {
+            rates[code] = {
+              rate:value,
+              unit:1
+            };
+          }
+
+        }
+      );
+
+      if (
+        rates.IDR &&
+        rates.EUR &&
+        rates.USD
+      ) {
+
+        APP.currencyRates = {
+          date:
+            data.time_last_update_utc || '',
+          nextUpdate:
+            data.time_next_update_utc || '',
+          source:'ExchangeRate-API',
+          base:'PLN',
+          rates
+        };
+
+        return true;
+
+      }
+
+    }
+
+  } catch(e) {}
+
+  return false;
+
+}
+
+
+async function loadLiveWeather_() {
+
+  const url =
+    'https://api.open-meteo.com/v1/forecast' +
+    '?latitude=-8.6500' +
+    '&longitude=115.2167' +
+    '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m' +
+    '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max' +
+    '&forecast_days=2' +
+    '&timezone=Asia%2FMakassar';
+
+  try {
+
+    const data =
+      await fetchJson_(
+        url,
+        7500
+      );
+
+    if (
+      !data ||
+      !data.current ||
+      !data.daily
+    ) {
+      return false;
+    }
+
+    const currentCode =
+      weatherCodeInfoClient_(
+        data.current.weather_code
+      );
+
+    const tomorrowCode =
+      weatherCodeInfoClient_(
+        data.daily.weather_code
+          ? data.daily.weather_code[1]
+          : null
+      );
+
+    APP.weather = {
+
+      location:
+        'Bali · Denpasar',
+
+      updatedAt:
+        data.current.time || '',
+
+      current: {
+
+        temperature:
+          Number(
+            data.current.temperature_2m
+          ),
+
+        feelsLike:
+          Number(
+            data.current.apparent_temperature
+          ),
+
+        humidity:
+          Number(
+            data.current.relative_humidity_2m
+          ),
+
+        wind:
+          Number(
+            data.current.wind_speed_10m
+          ),
+
+        label:
+          currentCode.label,
+
+        icon:
+          currentCode.icon
+
+      },
+
+      tomorrow: {
+
+        date:
+          data.daily.time
+            ? data.daily.time[1]
+            : '',
+
+        min:
+          data.daily.temperature_2m_min
+            ? Number(
+                data.daily.temperature_2m_min[1]
+              )
+            : null,
+
+        max:
+          data.daily.temperature_2m_max
+            ? Number(
+                data.daily.temperature_2m_max[1]
+              )
+            : null,
+
+        rainProbability:
+          data.daily.precipitation_probability_max
+            ? Number(
+                data.daily.precipitation_probability_max[1]
+              )
+            : null,
+
+        label:
+          tomorrowCode.label,
+
+        icon:
+          tomorrowCode.icon
+
+      },
+
+      source:
+        'Open-Meteo'
+
+    };
+
+    return true;
+
+  } catch(e) {
+
+    return false;
+
+  }
+
+}
+
+
+async function hydrateLiveExternalData_() {
+
+  const rates =
+    APP.currencyRates &&
+    APP.currencyRates.rates
+      ? APP.currencyRates.rates
+      : {};
+
+  const needsCurrency =
+    !rates.IDR ||
+    !rates.EUR ||
+    !rates.USD;
+
+  const needsWeather =
+    !APP.weather ||
+    !APP.weather.current ||
+    !APP.weather.tomorrow;
+
+  const jobs = [];
+
+  if (needsCurrency) {
+    jobs.push(
+      loadLiveCurrency_()
+    );
+  }
+
+  if (needsWeather) {
+    jobs.push(
+      loadLiveWeather_()
+    );
+  }
+
+  if (!jobs.length) {
+    return false;
+  }
+
+  const results =
+    await Promise.allSettled(
+      jobs
+    );
+
+  return results.some(
+    result =>
+      result.status === 'fulfilled' &&
+      result.value === true
+  );
+
+}
+
+/* BALI_LIVE_EXTERNAL_END */
+
+function saveOfflineSnapshot_() {
+  try {
+    const snapshot={
+      savedAt:new Date().toISOString(),
+      data:APP
+    };
+
+    localStorage.setItem(
+      OFFLINE_KEY,
+      JSON.stringify(snapshot)
+    );
+
+    // Jeśli aplikacja działa wewnątrz instalowalnej powłoki PWA,
+    // przekazujemy jej bezpieczną kopię danych do prawdziwego trybu offline.
+    // W samodzielnej PWA snapshot pozostaje w localStorage tego urządzenia.
+
+  } catch(e) {}
+}
+
+function loadOfflineSnapshot_() {
+  try {
+    const raw=localStorage.getItem(OFFLINE_KEY);
+    if(!raw) return null;
+    const parsed=JSON.parse(raw);
+    return parsed && parsed.data ? parsed : null;
+  } catch(e) {
+    return null;
+  }
+}
+
+async function reloadData() {
+
+  const cached =
+    loadOfflineSnapshot_();
+
+  let hadCachedData = false;
+
+  if (
+    cached &&
+    cached.data
+  ) {
+
+    APP =
+      cached.data;
+
+    APP.documents =
+      APP.documents || [];
+
+    APP.places =
+      APP.places || [];
+
+    APP.emergency =
+      APP.emergency || [];
+
+    APP.costs =
+      APP.costs || [];
+
+    APP_OFFLINE = false;
+
+    hadCachedData = true;
+
+    document
+      .getElementById('subtitle')
+      .textContent =
+        'Ostatni zapis · odświeżam dane…';
+
+    // Najpierw pokazujemy ostatnią znaną wersję.
+    // Dzięki temu aplikacja wygląda na natychmiastową.
+    render();
+
+  } else {
+
+    // Nigdy nie zastępujemy całej aplikacji ekranem ładowania.
+    // Od pierwszej klatki renderujemy normalny, klikalny interfejs,
+    // a dane z Google Sheets uzupełniają go asynchronicznie.
+    document
+      .getElementById('subtitle')
+      .textContent =
+        'Prywatna aplikacja · pobieram świeże dane…';
+
+    render();
+
+  }
+
+  try {
+
+    // Szybki pakiet startowy:
+    // plan + checklista + podstawowe informacje.
+    const initial =
+      await api(
+        'getInitialAppData'
+      );
+
+    APP =
+      Object.assign(
+        {},
+        APP,
+        initial,
+        {
+          documents:
+            APP.documents || [],
+          places:
+            APP.places || [],
+          emergency:
+            APP.emergency || [],
+          costs:
+            APP.costs || []
+        }
+      );
+
+    APP_OFFLINE = false;
+
+    document
+      .getElementById('subtitle')
+      .textContent =
+        'Prywatna aplikacja' +
+        (APP.accessPerson
+          ? ' · ' + APP.accessPerson
+          : '') +
+        ' · aktualizuję szczegóły…';
+
+    // Krytyczne dane już są — użytkownik może korzystać z appki.
+    render();
+
+    // Reszta ładuje się w tle równolegle.
+    const deferredPromise =
+      api('getDeferredAppData');
+
+    const livePromise =
+      hydrateLiveExternalData_();
+
+    const results =
+      await Promise.allSettled([
+        deferredPromise,
+        livePromise
+      ]);
+
+    const deferredResult =
+      results[0];
+
+    if (
+      deferredResult.status ===
+      'fulfilled'
+    ) {
+
+      APP =
+        Object.assign(
+          {},
+          APP,
+          deferredResult.value || {}
+        );
+
+      APP.documents =
+        APP.documents || [];
+
+      APP.places =
+        APP.places || [];
+
+      APP.emergency =
+        APP.emergency || [];
+
+      APP.costs =
+        APP.costs || [];
+
+    }
+
+    saveOfflineSnapshot_();
+
+    document
+      .getElementById('subtitle')
+      .textContent =
+        'Prywatna aplikacja' +
+        (APP.accessPerson
+          ? ' · ' + APP.accessPerson
+          : '') +
+        ' · dane aktualne';
+
+    render();
+
+  } catch(e) {
+
+    if (
+      hadCachedData
+    ) {
+
+      APP_OFFLINE = true;
+
+      document
+        .getElementById('subtitle')
+        .textContent =
+          'Ostatni zapis · nie udało się odświeżyć';
+
+      render();
+
+      return;
+
+    }
+
+    const cachedAfterError =
+      loadOfflineSnapshot_();
+
+    if (
+      cachedAfterError &&
+      cachedAfterError.data
+    ) {
+
+      APP =
+        cachedAfterError.data;
+
+      APP.documents =
+        APP.documents || [];
+
+      APP.places =
+        APP.places || [];
+
+      APP.emergency =
+        APP.emergency || [];
+
+      APP.costs =
+        APP.costs || [];
+
+      APP_OFFLINE = true;
+
+      const saved =
+        cachedAfterError.savedAt
+          ? new Date(
+              cachedAfterError.savedAt
+            )
+            .toLocaleString('pl-PL')
+          : '';
+
+      document
+        .getElementById('subtitle')
+        .textContent =
+          'Tryb offline' +
+          (saved
+            ? ' · dane z ' + saved
+            : '');
+
+      render();
+
+      return;
+
+    }
+
+    document
+      .getElementById('content')
+      .innerHTML =
+        `<div class="card">
+          <b>Nie udało się wczytać danych.</b>
+          <p class="muted">${esc(e.message)}</p>
+        </div>`;
+
+  }
+
+}
+
+function setTab(tab) {
+
+  currentTab = tab;
+
+  document
+    .querySelectorAll('.navbtn')
+    .forEach(
+      b => b.classList.toggle(
+        'active',
+        b.dataset.tab === tab
+      )
+    );
+
+  render();
+
+  window.scrollTo({
+    top:0,
+    behavior:'smooth'
+  });
+
+}
+
+
+function initBottomNavigation_() {
+
+  const nav =
+    document.getElementById(
+      'bottomnav'
+    );
+
+  if (!nav) {
+    return;
+  }
+
+  nav.addEventListener(
+    'click',
+    event => {
+
+      const btn =
+        event.target.closest(
+          '.navbtn'
+        );
+
+      if (!btn) {
+        return;
+      }
+
+      const tab =
+        btn.dataset.tab;
+
+      if (
+        !allowedTabs.includes(tab)
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      setTab(tab);
+
+    }
+  );
+
+}
+
+
+function baliTodayIso() {
+
+  try {
+
+    return new Intl.DateTimeFormat(
+      'en-CA',
+      {
+        timeZone:'Asia/Makassar',
+        year:'numeric',
+        month:'2-digit',
+        day:'2-digit'
+      }
+    ).format(new Date());
+
+  } catch(e) {
+
+    return new Date()
+      .toISOString()
+      .slice(0,10);
+
+  }
+
+}
+
+
+function dayStatus() {
+
+  const today = baliTodayIso();
+
+  const sorted =
+    APP.trip.filter(x => x.isoDate);
+
+  if (!sorted.length) {
+    return {
+      mode:'none'
+    };
+  }
+
+  const first =
+    sorted[0].isoDate;
+
+  const last =
+    sorted[sorted.length - 1].isoDate;
+
+
+  if (today < first) {
+
+    const days = Math.ceil(
+      (
+        new Date(first + 'T00:00:00') -
+        new Date(today + 'T00:00:00')
+      ) / 86400000
+    );
+
+    return {
+      mode:'before',
+      day:sorted[0],
+      days
+    };
+
+  }
+
+
+  if (today > last) {
+
+    return {
+      mode:'after',
+      day:sorted[sorted.length - 1]
+    };
+
+  }
+
+
+  const exact =
+    sorted.find(
+      x => x.isoDate === today
+    );
+
+
+  return {
+
+    mode:'during',
+
+    day:
+      exact ||
+      sorted.find(
+        x => x.isoDate > today
+      ) ||
+      sorted[sorted.length - 1]
+
+  };
+
+}
+
+
+function syncNav_() {
+  document
+    .querySelectorAll('.navbtn')
+    .forEach(
+      b => b.classList.toggle(
+        'active',
+        b.dataset.tab === currentTab
+      )
+    );
+}
+
+function render() {
+
+  syncNav_();
+
+  if (currentTab === 'today') {
+    renderToday();
+  }
+
+  if (currentTab === 'plan') {
+    renderPlan();
+  }
+
+  if (currentTab === 'checklist') {
+    renderChecklist();
+  }
+
+  if (currentTab === 'transport') {
+    renderTransport();
+  }
+
+  if (currentTab === 'costs') {
+    renderCosts();
+  }
+
+  if (currentTab === 'more') {
+    renderMore();
+  }
+
+}
+
+
+function safeExternalUrl_(value) {
+  try {
+    const u=new URL(String(value || '').trim());
+    if(u.protocol === 'https:' || u.protocol === 'http:') return u.href;
+  } catch(e) {}
+  return '';
+}
+
+function phoneDigits_(value) {
+  return String(value || '')
+    .replace(/[^0-9+]/g,'')
+    .replace(/^00/,'+');
+}
+
+function extractPhone_(text) {
+  const match=String(text || '').match(/(?:\+?\d[\d\s().-]{6,}\d)/);
+  return match ? match[0] : '';
+}
+
+function whatsappUrl_(phone) {
+  const raw=phoneDigits_(phone).replace(/\+/g,'');
+  return raw ? 'https://wa.me/' + encodeURIComponent(raw) : '';
+}
+
+function googleMapsSearchUrl_(query) {
+  return 'https://www.google.com/maps/search/?api=1&query=' +
+    encodeURIComponent(String(query || '').trim());
+}
+
+function googleMapsToHotelUrl_(day) {
+  const destination=day.hotelAddress || day.hotel;
+  if(!destination) return '';
+  return 'https://www.google.com/maps/dir/?api=1&destination=' +
+    encodeURIComponent(destination);
+}
+
+function googleMapsDayRouteUrl_(day) {
+  const raw=String(day.routeText || '').trim();
+  if(!raw) return '';
+
+  const stops=raw.split('→').map(x=>x.trim()).filter(Boolean);
+  if(stops.length < 2) return googleMapsSearchUrl_(raw);
+
+  const origin=stops[0];
+  const destination=stops[stops.length-1];
+  const waypoints=stops.slice(1,-1).slice(0,8).join('|');
+
+  let url='https://www.google.com/maps/dir/?api=1' +
+    '&origin=' + encodeURIComponent(origin) +
+    '&destination=' + encodeURIComponent(destination);
+
+  if(waypoints){
+    url += '&waypoints=' + encodeURIComponent(waypoints);
+  }
+
+  return url;
+}
+
+function actionLinks(day) {
+  let out='<div class="actions">';
+
+  if(day.bookingUrl){
+    out += `<a class="btn small"
+      href="${esc(day.bookingUrl)}"
+      target="_blank"
+      rel="noopener noreferrer">🏨 Booking</a>`;
+  }
+
+  if(day.hotel){
+    const hotelQuery=day.hotelAddress || (day.hotel + ', Indonesia');
+
+    out += `<a class="btn secondary small"
+      href="${esc(googleMapsSearchUrl_(hotelQuery))}"
+      target="_blank"
+      rel="noopener noreferrer">📍 Google Maps</a>`;
+
+    const directions=googleMapsToHotelUrl_(day);
+    if(directions){
+      out += `<a class="btn ghost small"
+        href="${esc(directions)}"
+        target="_blank"
+        rel="noopener noreferrer">🚗 Trasa do noclegu</a>`;
+    }
+  }
+
+  const dayRoute=googleMapsDayRouteUrl_(day);
+  if(dayRoute){
+    out += `<a class="btn ghost small"
+      href="${esc(dayRoute)}"
+      target="_blank"
+      rel="noopener noreferrer">🧭 Trasa dnia</a>`;
+  }
+
+  const phone=day.transferWhatsapp || extractPhone_(day.transfer);
+  const wa=whatsappUrl_(phone);
+
+  if(wa){
+    out += `<a class="btn secondary small"
+      href="${esc(wa)}"
+      target="_blank"
+      rel="noopener noreferrer">💬 WhatsApp</a>`;
+  }
+
+  out += `<button class="btn ghost small"
+    onclick="editTransfer('${esc(day.day)}')">🚐 Transfer</button>`;
+
+  out += `<button class="btn ghost small"
+    onclick="editDayExtras('${esc(day.day)}')">📝 Dzień</button>`;
+
+  out += '</div>';
+  return out;
+}
+
+function tripCard(day, compact=false) {
+  return `
+    <section class="card">
+      <div class="date-row">
+        <div>
+          <div class="daybadge">Dzień ${esc(day.day)}</div>
+          <div class="date">${esc(day.dateLabel)}</div>
+        </div>
+        ${day.hotel ? '<div>🏝️</div>' : ''}
+      </div>
+
+      ${compact ? '' : `<div class="plan">${nl(day.plan)}</div>`}
+
+      ${day.dayNote
+        ? `<div class="note-card"><b>📝 Notatka dnia</b><br>${nl(day.dayNote)}</div>`
+        : ''}
+
+      ${day.transfer
+        ? `<div class="transport"><b>🚐 Kierowca / transfer</b><br>${nl(day.transfer)}</div>`
+        : ''}
+
+      ${day.hotel
+        ? `<div class="hotel">
+            <span class="muted">Nocleg</span>
+            <strong>${esc(day.hotel)}</strong>
+            ${day.hotelAddress
+              ? `<div class="address-line">📍 ${esc(day.hotelAddress)}</div>`
+              : ''}
+          </div>`
+        : ''}
+
+      ${actionLinks(day)}
+    </section>`;
+}
+
+function weatherNumber(value, suffix='') {
+
+  return (
+    value === null ||
+    value === undefined ||
+    !Number.isFinite(Number(value))
+  )
+    ? '—'
+    : Math.round(Number(value)) + suffix;
+
+}
+
+
+function weatherCard() {
+
+  const w =
+    APP.weather;
+
+  if (
+    !w ||
+    !w.current ||
+    !w.tomorrow
+  ) {
+    return `
+      <section class="weather-card">
+        <div class="date-row">
+          <div>
+            <div class="daybadge">
+              Pogoda · Bali
+            </div>
+            <div class="date">
+              Teraz i jutro
+            </div>
+          </div>
+          <div>🌴</div>
+        </div>
+        <div class="weather-label"
+             style="margin-top:12px">
+          Nie udało się teraz pobrać pogody.
+          Kliknij ↻, aby spróbować ponownie.
+        </div>
+      </section>`;
+  }
+
+  return `
+    <section class="weather-card">
+
+      <div class="date-row">
+
+        <div>
+          <div class="daybadge">
+            Pogoda · ${esc(w.location || 'Bali')}
+          </div>
+
+          <div class="date">
+            Teraz i jutro
+          </div>
+        </div>
+
+        <div>🌴</div>
+
+      </div>
+
+
+      <div
+        class="weather-grid"
+        style="margin-top:13px">
+
+        <div class="weather-box">
+
+          <div class="weather-icon">
+            ${esc(w.current.icon || '🌤️')}
+          </div>
+
+          <div class="weather-temp">
+            ${weatherNumber(w.current.temperature, '°C')}
+          </div>
+
+          <div class="weather-label">
+            Dzisiaj teraz · ${esc(w.current.label || '')}<br>
+            Odczuwalna:
+            ${weatherNumber(w.current.feelsLike, '°C')}<br>
+            Wilgotność:
+            ${weatherNumber(w.current.humidity, '%')}
+          </div>
+
+        </div>
+
+
+        <div class="weather-box">
+
+          <div class="weather-icon">
+            ${esc(w.tomorrow.icon || '🌤️')}
+          </div>
+
+          <div class="weather-temp">
+            ${weatherNumber(w.tomorrow.max, '°C')}
+          </div>
+
+          <div class="weather-label">
+            Jutro · ${esc(w.tomorrow.label || '')}<br>
+            Min:
+            ${weatherNumber(w.tomorrow.min, '°C')}<br>
+            Deszcz:
+            ${weatherNumber(w.tomorrow.rainProbability, '%')}
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="checkmeta"
+           style="margin-top:10px">
+        Prognoza: Open-Meteo · odświeża się automatycznie.
+      </div>
+
+    </section>`;
+
+}
+
+
+function renderToday() {
+
+  const s =
+    dayStatus();
+
+  let hero = '';
+
+  let card = '';
+
+
+  if (s.mode === 'before') {
+
+    hero =
+      `<div class="hero">
+
+        <div class="eyebrow">
+          Do wyjazdu
+        </div>
+
+        <h2>
+          ${s.days} dni ✈️
+        </h2>
+
+        <p>
+          Pierwszy punkt:
+          ${esc(s.day.dateLabel)}.
+          Checklista przed wyjazdem jest poniżej.
+        </p>
+
+      </div>`;
+
+
+    card =
+      tripCard(s.day);
+
+  }
+
+
+  else if (s.mode === 'during') {
+
+    hero =
+      `<div class="hero">
+
+        <div class="eyebrow">
+          Dzisiaj na Bali
+        </div>
+
+        <h2>
+          Dzień ${esc(s.day.day)}
+        </h2>
+
+        <p>
+          ${esc(s.day.dateLabel)}
+        </p>
+
+      </div>`;
+
+
+    card =
+      tripCard(s.day);
+
+  }
+
+
+  else if (s.mode === 'after') {
+
+    hero =
+      `<div class="hero">
+
+        <div class="eyebrow">
+          Bali 2026
+        </div>
+
+        <h2>
+          Podróż zakończona 🌴
+        </h2>
+
+        <p>
+          Plan nadal zostaje w aplikacji
+          jako pamiątka i archiwum.
+        </p>
+
+      </div>`;
+
+  }
+
+
+  const open =
+    APP.checklist
+      .filter(x => !x.done)
+      .slice(0,4);
+
+
+  const check =
+    open.length
+      ? `
+        <h3 class="section-title">
+          Najbliższe rzeczy do ogarnięcia
+        </h3>
+
+        <div class="card">
+          ${open.map(checkRow).join('')}
+        </div>
+      `
+      : '';
+
+
+  const startupHint =
+    !APP.trip.length
+      ? '<div class="card" style="margin-bottom:14px">' +
+          '<div class="section-kicker">Synchronizacja</div>' +
+          '<div class="muted">Pobieram plan z Google Sheets. Możesz już korzystać z zakładek poniżej.</div>' +
+        '</div>'
+      : '';
+
+  document.getElementById('content').innerHTML =
+    startupHint +
+    hero +
+    weatherCard() +
+    card +
+    check;
+
+}
+
+
+function planActiveDay_() {
+
+  const today =
+    baliTodayIso();
+
+  return (
+    APP.trip.find(
+      d => d.isoDate === today
+    ) ||
+    APP.trip.find(
+      d =>
+        d.isoDate &&
+        d.isoDate > today
+    ) ||
+    APP.trip[
+      Math.max(
+        0,
+        APP.trip.length - 1
+      )
+    ] ||
+    null
+  );
+
+}
+
+
+function planRouteLabel_(day) {
+
+  if (!day) {
+    return 'Plan podróży';
+  }
+
+  const place =
+    day.hotel ||
+    String(day.plan || '')
+      .split('\n')[0]
+      .trim();
+
+  return (
+    'Dzień ' +
+    day.day +
+    ' · ' +
+    day.dateLabel +
+    (
+      place
+        ? ' · ' + place
+        : ''
+    )
+  );
+
+}
+
+
+function renderPlan() {
+
+  const active =
+    planActiveDay_();
+
+  const today =
+    baliTodayIso();
+
+  const route =
+    `<div class="plan-route-sticky">
+
+      <div class="plan-route-head">
+
+        <div
+          class="plan-route-title"
+          id="planRouteTitle">
+
+          ${esc(
+            planRouteLabel_(active)
+          )}
+
+        </div>
+
+        <div class="plan-route-hint">
+          przewijaj ↓
+        </div>
+
+      </div>
+
+
+      <div
+        class="plan-route-track"
+        id="planRouteTrack">
+
+        ${APP.trip
+          .map(
+            d =>
+              `<button
+                class="route-day
+                  ${active && String(active.day) === String(d.day) ? 'active' : ''}
+                  ${d.isoDate === today ? 'today' : ''}"
+                data-route-day="${esc(d.day)}"
+                onclick="jumpToPlanDay('${esc(d.day)}')">
+                D${esc(d.day)}
+              </button>`
+          )
+          .join('')}
+
+      </div>
+
+    </div>`;
+
+
+  document.getElementById('content').innerHTML =
+
+    `<div class="hero">
+
+      <div class="eyebrow">
+        ${APP.trip.length} dni
+      </div>
+
+      <h2>
+        Cała podróż
+      </h2>
+
+      <p>
+        Pasek poniżej zostaje na górze
+        podczas przewijania i pokazuje,
+        przy którym dniu jesteście.
+      </p>
+
+    </div>`
+
+    +
+
+    route
+
+    +
+
+    APP.trip
+      .map(
+        d =>
+          `<div
+            id="plan-day-${esc(d.day)}"
+            data-plan-day="${esc(d.day)}">
+            ${tripCard(d)}
+          </div>`
+      )
+      .join('');
+
+
+  requestAnimationFrame(
+    () => {
+
+      setupPlanObserver();
+
+      if (active) {
+        setPlanActive(
+          active.day,
+          true
+        );
+      }
+
+    }
+  );
+
+}
+
+
+let planObserver = null;
+
+
+function setPlanActive(
+  dayNumber,
+  center=true
+) {
+
+  const day =
+    APP.trip.find(
+      d =>
+        String(d.day) ===
+        String(dayNumber)
+    );
+
+  if (!day) {
+    return;
+  }
+
+  document
+    .querySelectorAll(
+      '.route-day'
+    )
+    .forEach(
+      btn =>
+        btn.classList.toggle(
+          'active',
+          String(btn.dataset.routeDay) ===
+          String(dayNumber)
+        )
+    );
+
+
+  const title =
+    document.getElementById(
+      'planRouteTitle'
+    );
+
+  if (title) {
+    title.textContent =
+      planRouteLabel_(day);
+  }
+
+
+  if (center) {
+
+    const btn =
+      document.querySelector(
+        '.route-day[data-route-day="' +
+        CSS.escape(String(dayNumber)) +
+        '"]'
+      );
+
+    if (btn) {
+      btn.scrollIntoView({
+        behavior:'smooth',
+        block:'nearest',
+        inline:'center'
+      });
+    }
+
+  }
+
+}
+
+
+function jumpToPlanDay(dayNumber) {
+
+  const el =
+    document.getElementById(
+      'plan-day-' + dayNumber
+    );
+
+  if (!el) {
+    return;
+  }
+
+  setPlanActive(
+    dayNumber,
+    true
+  );
+
+  el.scrollIntoView({
+    behavior:'smooth',
+    block:'start'
+  });
+
+}
+
+
+function setupPlanObserver() {
+
+  if (planObserver) {
+    planObserver.disconnect();
+  }
+
+  if (
+    !('IntersectionObserver' in window)
+  ) {
+    return;
+  }
+
+  planObserver =
+    new IntersectionObserver(
+      entries => {
+
+        const visible =
+          entries
+            .filter(
+              x =>
+                x.isIntersecting
+            )
+            .sort(
+              (a,b) =>
+                a.boundingClientRect.top -
+                b.boundingClientRect.top
+            );
+
+        if (!visible.length) {
+          return;
+        }
+
+        const day =
+          visible[0]
+            .target
+            .dataset
+            .planDay;
+
+        setPlanActive(
+          day,
+          true
+        );
+
+      },
+      {
+        root:null,
+        rootMargin:'-34% 0px -56% 0px',
+        threshold:0
+      }
+    );
+
+
+  document
+    .querySelectorAll(
+      '[data-plan-day]'
+    )
+    .forEach(
+      el =>
+        planObserver.observe(el)
+    );
+
+}
+
+
+function checkRow(item) {
+
+  return `
+
+    <div class="checkrow ${item.done ? 'done' : ''}">
+
+      <input
+        type="checkbox"
+        ${item.done ? 'checked' : ''}
+        onchange="toggleCheck('${esc(item.id)}',this.checked)"
+      >
+
+      <div>
+
+        <div class="checktitle">
+          ${esc(item.task)}
+        </div>
+
+        <div class="checkmeta">
+
+          ${esc(item.category)}
+
+          ${
+            item.deadline
+            ? ' · ' + esc(item.deadline)
+            : ''
+          }
+
+          ${
+            item.notes
+            ? ' · ' + esc(item.notes)
+            : ''
+          }
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+function renderChecklist() {
+
+  const total =
+    APP.checklist.length;
+
+  const done =
+    APP.checklist.filter(
+      x => x.done
+    ).length;
+
+  const pct =
+    total
+      ? Math.round(
+          done / total * 100
+        )
+      : 0;
+
+
+  const categories =
+    [
+      ...new Set(
+        APP.checklist.map(
+          x => x.category
+        )
+      )
+    ];
+
+
+  let body =
+
+    `<div class="hero">
+
+      <div class="eyebrow">
+        Przygotowania
+      </div>
+
+      <h2>
+        ${done}/${total} gotowe
+      </h2>
+
+      <div class="progress">
+        <span style="width:${pct}%"></span>
+      </div>
+
+      <div class="chips">
+
+        <div class="chip">
+          ${pct}%
+        </div>
+
+      </div>
+
+    </div>`;
+
+
+  categories.forEach(
+    cat => {
+
+      const items =
+        APP.checklist.filter(
+          x => x.category === cat
+        );
+
+
+      body +=
+
+        `<h3 class="section-title">
+          ${esc(cat)}
+        </h3>
+
+        <div class="card">
+          ${items.map(checkRow).join('')}
+        </div>`;
+
+    }
+  );
+
+
+  body +=
+
+    `<button
+      class="btn"
+      style="width:100%"
+      onclick="addChecklistModal()">
+
+      ＋ Dodaj zadanie
+
+    </button>`;
+
+
+  document.getElementById('content').innerHTML =
+    body;
+
+}
+
+
+async function toggleCheck(id, done) {
+
+  const item =
+    APP.checklist.find(
+      x => x.id === id
+    );
+
+
+  if (item) {
+    item.done = done;
+  }
+
+
+  renderChecklist();
+
+
+  try {
+
+    await api(
+      'setChecklistStatus',
+      id,
+      done
+    );
+
+  }
+
+  catch(e) {
+
+    alert(
+      'Nie udało się zapisać: ' +
+      e.message
+    );
+
+    reloadData();
+
+  }
+
+}
+
+
+function renderTransport() {
+
+  const rows =
+    APP.trip.filter(
+      d =>
+        d.transfer ||
+        /transfer|fast boat|wylot|parking|kierowc|prom/i
+          .test(d.plan)
+    );
+
+
+  document.getElementById('content').innerHTML =
+
+    `<div class="hero">
+
+      <div class="eyebrow">
+        Logistyka
+      </div>
+
+      <h2>
+        Transporty
+      </h2>
+
+      <p>
+        Łodzie, kierowcy, loty i transfery.
+        Dane w tej sekcji zapisują się do
+        kolumny transportowej w Google Sheet.
+      </p>
+
+    </div>`
+
+    +
+
+    (
+      rows.length
+        ? rows
+            .map(d => tripCard(d))
+            .join('')
+        : '<div class="empty">Brak wpisanych transportów.</div>'
+    );
+
+}
+
+
+
+function formatAmount(amount, currency) {
+
+  const n =
+    Number(amount || 0);
+
+  try {
+
+    return new Intl.NumberFormat(
+      'pl-PL',
+      {
+        maximumFractionDigits:
+          currency === 'IDR'
+            ? 0
+            : 2
+      }
+    ).format(n) +
+    ' ' +
+    currency;
+
+  } catch(e) {
+
+    return n +
+      ' ' +
+      currency;
+
+  }
+
+}
+
+
+function convertToPln(amount, currency) {
+
+  const n =
+    Number(amount || 0);
+
+  if (currency === 'PLN') {
+    return n;
+  }
+
+  const rates =
+    APP.currencyRates?.rates || {};
+
+  const r =
+    rates[currency];
+
+  if (
+    !r ||
+    !r.rate
+  ) {
+    return null;
+  }
+
+  return (
+    n /
+    Number(r.rate)
+  );
+
+}
+
+
+function plnLabel(value) {
+
+  if (
+    value === null ||
+    !Number.isFinite(
+      Number(value)
+    )
+  ) {
+    return 'brak kursu';
+  }
+
+  return new Intl.NumberFormat(
+    'pl-PL',
+    {
+      style:'currency',
+      currency:'PLN',
+      maximumFractionDigits:2
+    }
+  ).format(
+    Number(value)
+  );
+
+}
+
+
+function costRow(item) {
+  const pln=convertToPln(item.amount,item.currency);
+  const people=Math.max(1,Number(item.people || 2));
+  const perPerson=pln !== null && Number.isFinite(Number(pln))
+    ? Number(pln) / people
+    : null;
+
+  return `
+    <div class="costrow">
+      <div class="costtop">
+        <div>
+          <div class="costname">${esc(item.item)}</div>
+          <div class="checkmeta">
+            ${esc(item.category || 'Inne')}
+            ${item.status ? ' · ' + esc(item.status) : ''}
+            ${item.day ? ' · dzień ' + esc(item.day) : ''}
+            ${item.notes ? ' · ' + esc(item.notes) : ''}
+          </div>
+        </div>
+        <div>
+          <div class="costamount">${formatAmount(item.amount,item.currency)}</div>
+          ${item.currency !== 'PLN'
+            ? `<div class="costpln">${pln !== null && Number.isFinite(Number(pln))
+                ? '≈ ' + formatAmount(pln,'PLN')
+                : 'kurs chwilowo niedostępny'}</div>`
+            : ''}
+          <div class="costpln">
+            ${perPerson !== null ? 'na osobę ≈ ' + formatAmount(perPerson,'PLN') : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderCosts() {
+  const costs=APP.costs || [];
+
+  const knownPln=costs
+    .map(x=>convertToPln(x.amount,x.currency))
+    .filter(x=>x !== null && Number.isFinite(Number(x)));
+
+  const total=knownPln.reduce((a,b)=>a+Number(b),0);
+
+  const perPerson=costs
+    .map(x=>{
+      const pln=convertToPln(x.amount,x.currency);
+      if(pln === null || !Number.isFinite(Number(pln))) return null;
+      return Number(pln) / Math.max(1,Number(x.people || 2));
+    })
+    .filter(x=>x !== null && Number.isFinite(Number(x)))
+    .reduce((a,b)=>a+Number(b),0);
+
+  const hotelPln=costs
+    .filter(x=>String(x.category).trim().toLowerCase()==='nocleg')
+    .map(x=>convertToPln(x.amount,x.currency))
+    .filter(x=>x !== null && Number.isFinite(Number(x)))
+    .reduce((a,b)=>a+Number(b),0);
+
+  const flightPln=costs
+    .filter(x=>['lot','loty'].includes(String(x.category).trim().toLowerCase()))
+    .map(x=>convertToPln(x.amount,x.currency))
+    .filter(x=>x !== null && Number.isFinite(Number(x)))
+    .reduce((a,b)=>a+Number(b),0);
+
+  const byDay={};
+
+  costs.forEach(item=>{
+    const day=String(item.day || '').trim();
+    if(!day) return;
+
+    const pln=convertToPln(item.amount,item.currency);
+    if(pln === null || !Number.isFinite(Number(pln))) return;
+
+    if(!byDay[day]) byDay[day]={total:0,perPerson:0};
+
+    byDay[day].total += Number(pln);
+    byDay[day].perPerson += Number(pln) / Math.max(1,Number(item.people || 2));
+  });
+
+  const dailyRows=Object.keys(byDay)
+    .sort((a,b)=>Number(a)-Number(b))
+    .map(day=>`<div class="day-cost">
+      <b>Dzień ${esc(day)}</b>
+      <span>${plnLabel(byDay[day].total)} · /os. ${plnLabel(byDay[day].perPerson)}</span>
+    </div>`)
+    .join('');
+
+  const rateDate=APP.currencyRates?.date || '';
+
+  document.getElementById('content').innerHTML = `
+    <div class="hero">
+      <div class="eyebrow">Budżet podróży</div>
+      <div class="money-total">${plnLabel(total)}</div>
+      <div class="travel-summary">
+        <div class="info-tile"><span class="muted">Na osobę</span><strong>${plnLabel(perPerson)}</strong></div>
+        <div class="info-tile"><span class="muted">Noclegi</span><strong>${plnLabel(hotelPln)}</strong></div>
+        <div class="info-tile"><span class="muted">Loty</span><strong>${plnLabel(flightPln)}</strong></div>
+      </div>
+      <p>
+        ${costs.length} zapisanych pozycji.
+        ${rateDate ? ' Kursy walut aktualizują się automatycznie.' : ' Kursy walut są pobierane automatycznie.'}
+      </p>
+    </div>
+
+    <h3 class="section-title">Wydatki dzienne</h3>
+    <div class="card">
+      ${dailyRows || '<div class="empty">Przy nowych wydatkach wybierz dzień podróży — podsumowanie pojawi się tutaj.</div>'}
+    </div>
+
+    <h3 class="section-title">Wszystkie koszty</h3>
+    <div class="card">
+      ${costs.length ? costs.map(costRow).join('') : '<div class="empty">Brak kosztów.</div>'}
+    </div>
+
+    <button class="btn" style="width:100%;margin-bottom:18px" onclick="addCostModal()">＋ Dodaj koszt</button>
+
+    <h3 class="section-title">Przelicznik walut</h3>
+    <div class="card">
+      <div class="two-fields">
+        <div class="field">
+          <label>Kwota</label>
+          <input id="convAmount" type="number" inputmode="decimal" value="100000" oninput="updateConverter()">
+        </div>
+        <div class="field">
+          <label>Mam w</label>
+          <select id="convCurrency" onchange="updateConverter()">
+            <option value="IDR" selected>IDR — rupia Bali</option>
+            <option value="PLN">PLN — złoty</option>
+            <option value="EUR">EUR — euro</option>
+            <option value="USD">USD — dolar</option>
+          </select>
+        </div>
+      </div>
+      <div class="converter-result" id="convResult">—</div>
+      <div class="checkmeta" style="margin-top:10px">
+        Przelicznik pokazuje równowartość jednocześnie w IDR, PLN, EUR i USD.
+      </div>
+    </div>`;
+
+  updateConverter();
+}
+
+function convertFromPln(pln, currency) {
+
+  const n =
+    Number(pln || 0);
+
+  if (currency === 'PLN') {
+    return n;
+  }
+
+  const rates =
+    APP.currencyRates?.rates || {};
+
+  const r =
+    rates[currency];
+
+  if (
+    !r ||
+    !r.rate
+  ) {
+    return null;
+  }
+
+  return (
+    n *
+    Number(r.rate)
+  );
+
+}
+
+
+function convertCurrency(
+  amount,
+  fromCurrency,
+  toCurrency
+) {
+
+  if (
+    String(fromCurrency) ===
+    String(toCurrency)
+  ) {
+    return Number(amount || 0);
+  }
+
+  const pln =
+    convertToPln(
+      amount,
+      fromCurrency
+    );
+
+  if (pln === null) {
+    return null;
+  }
+
+  return convertFromPln(
+    pln,
+    toCurrency
+  );
+
+}
+
+
+function currencyValueLabel(
+  value,
+  currency
+) {
+
+  if (
+    value === null ||
+    !Number.isFinite(
+      Number(value)
+    )
+  ) {
+    return 'brak kursu';
+  }
+
+  return new Intl.NumberFormat(
+    'pl-PL',
+    {
+      maximumFractionDigits:
+        currency === 'IDR'
+          ? 0
+          : 2
+    }
+  ).format(
+    Number(value)
+  );
+
+}
+
+
+function updateConverter() {
+
+  const amountEl =
+    document
+      .getElementById(
+        'convAmount'
+      );
+
+  const currencyEl =
+    document
+      .getElementById(
+        'convCurrency'
+      );
+
+  const resultEl =
+    document
+      .getElementById(
+        'convResult'
+      );
+
+  if (
+    !amountEl ||
+    !currencyEl ||
+    !resultEl
+  ) {
+    return;
+  }
+
+  const amount =
+    Number(
+      amountEl.value || 0
+    );
+
+  const from =
+    currencyEl.value;
+
+  const codes =
+    [
+      ['IDR','Rupie Bali'],
+      ['PLN','Złote'],
+      ['EUR','Euro'],
+      ['USD','Dolary']
+    ];
+
+  resultEl.innerHTML =
+    '<div class="conversion-grid">' +
+    codes
+      .map(
+        x => {
+
+          const code =
+            x[0];
+
+          const label =
+            x[1];
+
+          const value =
+            convertCurrency(
+              amount,
+              from,
+              code
+            );
+
+          return `
+            <div class="conversion-box">
+              <div class="conversion-code">
+                ${esc(code)} · ${esc(label)}
+              </div>
+              <div class="conversion-value">
+                ${currencyValueLabel(value, code)}
+              </div>
+            </div>`;
+
+        }
+      )
+      .join('') +
+    '</div>';
+
+}
+
+
+function addCostModal() {
+  const dayOptions=
+    '<option value="">Bez przypisania do dnia</option>' +
+    (APP.trip || []).map(d=>
+      `<option value="${esc(d.day)}">Dzień ${esc(d.day)} · ${esc(d.dateLabel)}</option>`
+    ).join('');
+
+  showModal(
+    `<h2>Nowy koszt</h2>
+
+      <div class="field">
+        <label>Kategoria</label>
+        <select id="newCostCat">
+          <option>Nocleg</option>
+          <option>Transport</option>
+          <option>Loty</option>
+          <option>Atrakcje</option>
+          <option>Jedzenie</option>
+          <option>Zakupy</option>
+          <option selected>Inne</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Pozycja</label>
+        <input id="newCostItem" placeholder="np. kolacja / Grab / bilety">
+      </div>
+
+      <div class="two-fields">
+        <div class="field">
+          <label>Kwota</label>
+          <input id="newCostAmount" type="number" inputmode="decimal" placeholder="0">
+        </div>
+        <div class="field">
+          <label>Waluta</label>
+          <select id="newCostCurrency">
+            <option value="PLN">PLN — złoty</option>
+            <option selected value="IDR">IDR — rupia indonezyjska</option>
+            <option value="EUR">EUR — euro</option>
+            <option value="USD">USD — dolar amerykański</option>
+            <option value="GBP">GBP — funt brytyjski</option>
+            <option value="TRY">TRY — lira turecka</option>
+            <option value="SGD">SGD — dolar singapurski</option>
+            <option value="AUD">AUD — dolar australijski</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="two-fields">
+        <div class="field">
+          <label>Dzień podróży</label>
+          <select id="newCostDay">${dayOptions}</select>
+        </div>
+        <div class="field">
+          <label>Dla ilu osób?</label>
+          <input id="newCostPeople" type="number" inputmode="numeric" min="1" value="2">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Status</label>
+        <select id="newCostStatus">
+          <option selected>PLANOWANE</option>
+          <option>ZAREZERWOWANE</option>
+          <option>ZAPŁACONE</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Notatki</label>
+        <input id="newCostNotes" placeholder="np. za 2 osoby">
+      </div>
+
+      <div class="actions">
+        <button class="btn" onclick="saveNewCost()">Dodaj</button>
+        <button class="btn ghost" onclick="closeModal()">Anuluj</button>
+      </div>`
+  );
+}
+
+async function saveNewCost() {
+  const category=document.getElementById('newCostCat').value.trim();
+  const item=document.getElementById('newCostItem').value.trim();
+  const amount=document.getElementById('newCostAmount').value;
+  const currency=document.getElementById('newCostCurrency').value;
+  const day=document.getElementById('newCostDay').value;
+  const people=Math.max(1,Number(document.getElementById('newCostPeople').value || 2));
+  const status=document.getElementById('newCostStatus').value;
+  const notes=document.getElementById('newCostNotes').value.trim();
+
+  if(!item) return alert('Wpisz nazwę kosztu.');
+  if(!amount || Number(amount) < 0) return alert('Wpisz poprawną kwotę.');
+
+  try {
+    await api('addCostItem',category,item,currency,Number(amount),status,notes,day,people);
+    closeModal();
+    await reloadData();
+    setTab('costs');
+  } catch(e) {
+    alert('Nie udało się zapisać kosztu: ' + e.message);
+  }
+}
+
+function docRow_(item) {
+  const url=safeExternalUrl_(item.url);
+
+  return `<div class="minirow ${item.done ? 'done' : ''}">
+    <div class="mini-main">
+      <div class="mini-title">${esc(item.name)}</div>
+      <div class="mini-meta">
+        ${esc(item.category || 'Inne')}
+        ${item.status ? ' · ' + esc(item.status) : ''}
+        ${item.notes ? '<br>' + esc(item.notes) : ''}
+      </div>
+    </div>
+    <div class="mini-actions">
+      <label class="pill">
+        <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleDoc('${esc(item.id)}',this.checked)"> ✓
+      </label>
+      ${url ? `<a class="btn ghost small" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Otwórz</a>` : ''}
+    </div>
+  </div>`;
+}
+
+async function toggleDoc(id,done) {
+  const item=(APP.documents || []).find(x=>x.id===id);
+  if(item){
+    item.done=done;
+    item.status=done ? 'GOTOWE' : 'DO ZROBIENIA';
+  }
+  renderMore();
+  saveOfflineSnapshot_();
+
+  try {
+    await api('setDocStatus',id,done);
+  } catch(e) {
+    alert('Nie udało się zapisać dokumentu: ' + e.message);
+    reloadData();
+  }
+}
+
+function placeMapUrl_(item) {
+  const explicit=safeExternalUrl_(item.mapsUrl);
+  if(explicit) return explicit;
+
+  return googleMapsSearchUrl_(
+    [item.name,item.location,'Indonesia'].filter(Boolean).join(', ')
+  );
+}
+
+function placeRow_(item) {
+  return `<div class="minirow ${item.done ? 'done' : ''}">
+    <div class="mini-main">
+      <div class="mini-title">${item.type === 'Jedzenie' ? '🍜' : '📍'} ${esc(item.name)}</div>
+      <div class="mini-meta">
+        ${esc(item.location || '')}
+        ${item.notes ? '<br>' + esc(item.notes) : ''}
+      </div>
+    </div>
+    <div class="mini-actions">
+      <label class="pill">
+        <input type="checkbox" ${item.done ? 'checked' : ''} onchange="togglePlace('${esc(item.id)}',this.checked)"> ✓
+      </label>
+      <a class="btn secondary small" href="${esc(placeMapUrl_(item))}" target="_blank" rel="noopener noreferrer">Mapa</a>
+    </div>
+  </div>`;
+}
+
+async function togglePlace(id,done) {
+  const item=(APP.places || []).find(x=>x.id===id);
+  if(item){
+    item.done=done;
+    item.status=done ? 'ODWIEDZONE' : 'DO ODWIEDZENIA';
+  }
+  renderMore();
+  saveOfflineSnapshot_();
+
+  try {
+    await api('setPlaceStatus',id,done);
+  } catch(e) {
+    alert('Nie udało się zapisać miejsca: ' + e.message);
+    reloadData();
+  }
+}
+
+function emergencyRow_(item) {
+  const phone=String(item.phone || '').trim();
+  const firstPhone=phone.split('/')[0].trim();
+  const dial=phoneDigits_(firstPhone);
+  const source=safeExternalUrl_(item.url);
+  const wa=(/WhatsApp/i.test(item.notes || '') || /Konsulat/i.test(item.type || ''))
+    ? whatsappUrl_(firstPhone)
+    : '';
+
+  return `<div class="minirow">
+    <div class="mini-main">
+      <div class="mini-title">${esc(item.name)}</div>
+      <div class="mini-meta">
+        ${esc(item.type || '')}
+        ${phone ? ' · ' + esc(phone) : ''}
+        ${item.notes ? '<br>' + esc(item.notes) : ''}
+      </div>
+    </div>
+    <div class="mini-actions">
+      ${dial ? `<a class="btn small" href="tel:${esc(dial)}">Zadzwoń</a>` : ''}
+      ${wa ? `<a class="btn secondary small" href="${esc(wa)}" target="_blank">WhatsApp</a>` : ''}
+      ${source ? `<a class="btn ghost small" href="${esc(source)}" target="_blank" rel="noopener noreferrer">Źródło</a>` : ''}
+    </div>
+  </div>`;
+}
+
+function addDocModal() {
+  showModal(`<h2>Dodaj dokument</h2>
+    <div class="field"><label>Kategoria</label><input id="newDocCat" value="Dokumenty"></div>
+    <div class="field"><label>Nazwa</label><input id="newDocName" placeholder="np. polisa ubezpieczeniowa"></div>
+    <div class="field"><label>Notatki</label><textarea id="newDocNotes"></textarea></div>
+    <div class="field"><label>Link do pliku / strony</label><input id="newDocUrl" type="url" placeholder="https://…"></div>
+    <div class="actions">
+      <button class="btn" onclick="saveNewDoc()">Dodaj</button>
+      <button class="btn ghost" onclick="closeModal()">Anuluj</button>
+    </div>`);
+}
+
+async function saveNewDoc() {
+  const category=document.getElementById('newDocCat').value.trim();
+  const name=document.getElementById('newDocName').value.trim();
+  const notes=document.getElementById('newDocNotes').value.trim();
+  const url=document.getElementById('newDocUrl').value.trim();
+
+  if(!name) return alert('Wpisz nazwę dokumentu.');
+
+  try {
+    await api('addDocItem',category,name,notes,url);
+    closeModal();
+    await reloadData();
+    setTab('more');
+  } catch(e) {
+    alert(e.message);
+  }
+}
+
+function addPlaceModal() {
+  showModal(`<h2>Dodaj miejsce</h2>
+    <div class="field">
+      <label>Typ</label>
+      <select id="newPlaceType">
+        <option>Jedzenie</option>
+        <option selected>Zobaczyć</option>
+      </select>
+    </div>
+    <div class="field"><label>Nazwa</label><input id="newPlaceName" placeholder="np. restauracja / plaża / świątynia"></div>
+    <div class="field"><label>Lokalizacja</label><input id="newPlaceLocation" placeholder="np. Ubud"></div>
+    <div class="field"><label>Link Google Maps (opcjonalnie)</label><input id="newPlaceMaps" type="url" placeholder="https://maps.google.com/…"></div>
+    <div class="field"><label>Notatki</label><textarea id="newPlaceNotes"></textarea></div>
+    <div class="actions">
+      <button class="btn" onclick="saveNewPlace()">Dodaj</button>
+      <button class="btn ghost" onclick="closeModal()">Anuluj</button>
+    </div>`);
+}
+
+async function saveNewPlace() {
+  const type=document.getElementById('newPlaceType').value;
+  const name=document.getElementById('newPlaceName').value.trim();
+  const location=document.getElementById('newPlaceLocation').value.trim();
+  const maps=document.getElementById('newPlaceMaps').value.trim();
+  const notes=document.getElementById('newPlaceNotes').value.trim();
+
+  if(!name) return alert('Wpisz nazwę miejsca.');
+
+  try {
+    await api('addPlaceItem',type,name,location,maps,notes);
+    closeModal();
+    await reloadData();
+    setTab('more');
+  } catch(e) {
+    alert(e.message);
+  }
+}
+
+function addEmergencyModal() {
+  showModal(`<h2>Dodaj kontakt awaryjny</h2>
+    <div class="field"><label>Nazwa</label><input id="newEmergencyName" placeholder="np. ubezpieczyciel"></div>
+    <div class="field"><label>Telefon</label><input id="newEmergencyPhone" type="tel" placeholder="+48 …"></div>
+    <div class="field"><label>Typ</label><input id="newEmergencyType" value="Prywatny"></div>
+    <div class="field"><label>Notatki</label><textarea id="newEmergencyNotes"></textarea></div>
+    <div class="field"><label>Link</label><input id="newEmergencyUrl" type="url" placeholder="https://…"></div>
+    <div class="actions">
+      <button class="btn" onclick="saveNewEmergency()">Dodaj</button>
+      <button class="btn ghost" onclick="closeModal()">Anuluj</button>
+    </div>`);
+}
+
+async function saveNewEmergency() {
+  const name=document.getElementById('newEmergencyName').value.trim();
+  const phone=document.getElementById('newEmergencyPhone').value.trim();
+  const type=document.getElementById('newEmergencyType').value.trim();
+  const notes=document.getElementById('newEmergencyNotes').value.trim();
+  const url=document.getElementById('newEmergencyUrl').value.trim();
+
+  if(!name) return alert('Wpisz nazwę kontaktu.');
+
+  try {
+    await api('addEmergencyContact',name,phone,type,notes,url);
+    closeModal();
+    await reloadData();
+    setTab('more');
+  } catch(e) {
+    alert(e.message);
+  }
+}
+
+function renderMore() {
+  const chatUrl=localStorage.getItem('baliChatUrl') || '';
+  const docs=APP.documents || [];
+  const docsDone=docs.filter(x=>x.done).length;
+  const places=APP.places || [];
+  const emergency=APP.emergency || [];
+  const offline=loadOfflineSnapshot_();
+
+  document.getElementById('content').innerHTML = `
+    <div class="hero">
+      <div class="eyebrow">Centrum podróży</div>
+      <h2>Wszystko pod ręką 🌴</h2>
+      <p>Dokumenty, awaryjne kontakty, zapisane miejsca i kopia offline w jednym miejscu.</p>
+      <div class="chips">
+        <div class="chip">📄 ${docsDone}/${docs.length} dokumentów</div>
+        <div class="chip">📍 ${places.length} zapisanych miejsc</div>
+        ${APP_OFFLINE ? '<div class="chip offline-pill">📴 Tryb offline</div>' : '<div class="chip">☁️ Online</div>'}
+      </div>
+    </div>
+
+    <div class="quick-grid">
+      <button class="btn" onclick="openChat()">💬 ChatGPT</button>
+      <a class="btn secondary"
+         href="https://docs.google.com/spreadsheets/d/1Lfir8fvCJZXCyfurxRLoWm61Fv-7NwvEu4hqvhY1av8/edit"
+         target="_blank"
+         rel="noopener noreferrer">📊 Google Sheet</a>
+    </div>
+
+    <h3 class="section-title">📄 Dokumenty</h3>
+    <div class="card">
+      ${docs.length ? docs.map(docRow_).join('') : '<div class="empty">Brak zapisanych dokumentów.</div>'}
+    </div>
+    <button class="btn ghost" style="width:100%" onclick="addDocModal()">＋ Dodaj dokument</button>
+
+    <h3 class="section-title">🍜 Chcemy zjeść / zobaczyć</h3>
+    <div class="card">
+      ${places.length ? places.map(placeRow_).join('') : '<div class="empty">Dodaj pierwszą restaurację albo miejsce, które chcecie odwiedzić.</div>'}
+    </div>
+    <button class="btn ghost" style="width:100%" onclick="addPlaceModal()">＋ Dodaj miejsce</button>
+
+    <h3 class="section-title">🆘 Emergency</h3>
+    <div class="card">
+      ${emergency.length ? emergency.map(emergencyRow_).join('') : '<div class="empty">Brak kontaktów awaryjnych.</div>'}
+    </div>
+    <button class="btn ghost" style="width:100%" onclick="addEmergencyModal()">＋ Dodaj własny kontakt</button>
+
+    <h3 class="section-title">📴 Offline</h3>
+    <div class="card">
+      <b>Kopia planu na telefonie</b>
+      <p class="muted">
+        Po każdym udanym odświeżeniu aplikacja zapisuje plan, noclegi, checklistę,
+        koszty, dokumenty, miejsca i kontakty awaryjne w pamięci tego iPhone’a.
+        W wersji instalowanej z ekranu początkowego kopia jest też przekazywana
+        do powłoki PWA, dzięki czemu najważniejsze dane mogą być pokazane bez internetu.
+      </p>
+      <div class="pill">
+        ${offline && offline.savedAt
+          ? 'Ostatni zapis: ' + esc(new Date(offline.savedAt).toLocaleString('pl-PL'))
+          : 'Kopia zapisze się po odświeżeniu danych'}
+      </div>
+    </div>
+
+    <h3 class="section-title">💬 ChatGPT</h3>
+    <div class="card">
+      <div class="field">
+        <label>Link do przypiętego chatu ChatGPT</label>
+        <input id="chatUrl" type="url" placeholder="https://chatgpt.com/c/…" value="${esc(chatUrl)}">
+      </div>
+      <button class="btn" onclick="saveChatUrl()">Zapisz link</button>
+    </div>`;
+}
+
+function saveChatUrl() {
+
+  const url =
+    document
+      .getElementById('chatUrl')
+      .value
+      .trim();
+
+
+  localStorage.setItem(
+    'baliChatUrl',
+    url
+  );
+
+
+  alert(
+    'Zapisane na tym urządzeniu.'
+  );
+
+}
+
+
+function openChat() {
+
+  const url =
+    localStorage.getItem(
+      'baliChatUrl'
+    );
+
+
+  window.open(
+    url ||
+    'https://chatgpt.com/',
+    '_blank'
+  );
+
+}
+
+
+function showModal(html) {
+
+  document
+    .getElementById('modalContent')
+    .innerHTML = html;
+
+
+  document
+    .getElementById('modal')
+    .classList.add('show');
+
+}
+
+
+function closeModal() {
+
+  document
+    .getElementById('modal')
+    .classList.remove('show');
+
+}
+
+
+document
+  .getElementById('modal')
+  .addEventListener(
+    'click',
+    e => {
+
+      if (
+        e.target.id === 'modal'
+      ) {
+
+        closeModal();
+
+      }
+
+    }
+  );
+
+
+function editDayExtras(dayNumber) {
+  const day=APP.trip.find(x=>String(x.day)===String(dayNumber));
+  if(!day) return;
+
+  showModal(
+    `<h2>Dzień ${esc(dayNumber)} · szczegóły</h2>
+
+      <div class="field">
+        <label>Notatka dnia</label>
+        <textarea id="dayNoteText" placeholder="Zmiana planu, co warto pamiętać, co odpuściliśmy…">${esc(day.dayNote || '')}</textarea>
+      </div>
+
+      <div class="field">
+        <label>Adres noclegu</label>
+        <textarea id="hotelAddressText" placeholder="Pełny adres noclegu">${esc(day.hotelAddress || '')}</textarea>
+      </div>
+
+      <div class="field">
+        <label>WhatsApp kierowcy / transferu</label>
+        <input id="transferWhatsappText" type="tel" placeholder="+62 …" value="${esc(day.transferWhatsapp || '')}">
+      </div>
+
+      <div class="field">
+        <label>Trasa dnia</label>
+        <textarea id="dayRouteText" placeholder="Punkt 1 → Punkt 2 → Punkt 3">${esc(day.routeText || '')}</textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn" onclick="saveDayExtras('${esc(dayNumber)}')">Zapisz</button>
+        <button class="btn ghost" onclick="closeModal()">Anuluj</button>
+      </div>`
+  );
+}
+
+async function saveDayExtras(dayNumber) {
+  const note=document.getElementById('dayNoteText').value.trim();
+  const address=document.getElementById('hotelAddressText').value.trim();
+  const whatsapp=document.getElementById('transferWhatsappText').value.trim();
+  const route=document.getElementById('dayRouteText').value.trim();
+
+  try {
+    await Promise.all([
+      api('saveDayNote',dayNumber,note),
+      api('saveHotelAddress',dayNumber,address),
+      api('saveTransferWhatsapp',dayNumber,whatsapp),
+      api('saveDayRoute',dayNumber,route)
+    ]);
+
+    const day=APP.trip.find(x=>String(x.day)===String(dayNumber));
+    if(day){
+      day.dayNote=note;
+      day.hotelAddress=address;
+      day.transferWhatsapp=whatsapp;
+      day.routeText=route;
+    }
+
+    saveOfflineSnapshot_();
+    closeModal();
+    render();
+  } catch(e) {
+    alert('Nie udało się zapisać szczegółów dnia: ' + e.message);
+  }
+}
+
+function editTransfer(dayNumber) {
+
+  const day =
+    APP.trip.find(
+      x =>
+        String(x.day) ===
+        String(dayNumber)
+    );
+
+
+  showModal(
+
+    `<h2>
+      Transport · dzień ${esc(dayNumber)}
+    </h2>
+
+
+    <div class="field">
+
+      <label>
+        Kierowca / transfer
+      </label>
+
+      <textarea
+        id="transferText"
+        placeholder="Imię, WhatsApp, godzina, cena, miejsce odbioru…">${esc(day?.transfer || '')}</textarea>
+
+    </div>
+
+
+    <div class="actions">
+
+      <button
+        class="btn"
+        onclick="saveTransfer('${esc(dayNumber)}')">
+
+        Zapisz
+
+      </button>
+
+
+      <button
+        class="btn ghost"
+        onclick="closeModal()">
+
+        Anuluj
+
+      </button>
+
+    </div>`
+
+  );
+
+}
+
+
+async function saveTransfer(dayNumber) {
+
+  const text =
+    document
+      .getElementById('transferText')
+      .value
+      .trim();
+
+
+  try {
+
+    await api(
+      'saveTransfer',
+      dayNumber,
+      text
+    );
+
+
+    const day =
+      APP.trip.find(
+        x =>
+          String(x.day) ===
+          String(dayNumber)
+      );
+
+
+    if (day) {
+      day.transfer = text;
+    }
+
+
+    closeModal();
+
+    render();
+
+  }
+
+  catch(e) {
+
+    alert(
+      e.message
+    );
+
+  }
+
+}
+
+
+function checklistCategoryOptions() {
+
+  const defaults =
+    [
+      'Przed wyjazdem',
+      'Transport',
+      'Atrakcje',
+      'Przewodnik',
+      'Łodzie',
+      'Nusa Penida',
+      'Surfing',
+      'Dokumenty',
+      'Telefon',
+      'Noclegi',
+      'Jedzenie',
+      'Inne'
+    ];
+
+  const existing =
+    (APP.checklist || [])
+      .map(
+        x =>
+          String(
+            x.category || ''
+          ).trim()
+      )
+      .filter(Boolean);
+
+  const categories =
+    [
+      ...new Set(
+        [
+          ...existing,
+          ...defaults
+        ]
+      )
+    ];
+
+  return categories
+    .map(
+      category =>
+        `<option
+          value="${esc(category)}"
+          ${category === 'Inne' ? 'selected' : ''}>
+          ${esc(category)}
+        </option>`
+    )
+    .join('');
+
+}
+
+
+function addChecklistModal() {
+
+  showModal(
+
+    `<h2>
+      Nowe zadanie
+    </h2>
+
+
+    <div class="field">
+
+      <label>
+        Kategoria
+      </label>
+
+      <select id="newCat">
+        ${checklistCategoryOptions()}
+      </select>
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Zadanie
+      </label>
+
+      <textarea
+        id="newTask">
+      </textarea>
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Termin
+      </label>
+
+      <input
+        id="newDeadline"
+        placeholder="np. 01.11">
+
+    </div>
+
+
+    <div class="field">
+
+      <label>
+        Notatki
+      </label>
+
+      <input
+        id="newNotes">
+
+    </div>
+
+
+    <div class="actions">
+
+      <button
+        class="btn"
+        onclick="saveNewChecklist()">
+
+        Dodaj
+
+      </button>
+
+
+      <button
+        class="btn ghost"
+        onclick="closeModal()">
+
+        Anuluj
+
+      </button>
+
+    </div>`
+
+  );
+
+}
+
+
+async function saveNewChecklist() {
+
+  const category =
+    document
+      .getElementById('newCat')
+      .value
+      .trim();
+
+
+  const task =
+    document
+      .getElementById('newTask')
+      .value
+      .trim();
+
+
+  const deadline =
+    document
+      .getElementById('newDeadline')
+      .value
+      .trim();
+
+
+  const notes =
+    document
+      .getElementById('newNotes')
+      .value
+      .trim();
+
+
+  if (!task) {
+
+    return alert(
+      'Wpisz zadanie.'
+    );
+
+  }
+
+
+  try {
+
+    await api(
+      'addChecklistItem',
+      category,
+      task,
+      deadline,
+      notes
+    );
+
+
+    closeModal();
+
+    await reloadData();
+
+    setTab(
+      'checklist'
+    );
+
+  }
+
+  catch(e) {
+
+    alert(
+      e.message
+    );
+
+  }
+
+}
+
+
+initBottomNavigation_();
+migrateLegacySnapshot_();
+
+if (
+  BACKEND_URL &&
+  ACCESS_KEY
+) {
+  reloadData();
+} else {
+  render();
+  showBackendSetup_();
+}
+
+if (
+  'serviceWorker' in navigator
+) {
+
+  window.addEventListener(
+    'load',
+    () => {
+
+      navigator
+        .serviceWorker
+        .register(
+          './sw.js?v=5'
+        )
+        .catch(
+          () => {}
+        );
+
+    }
+  );
+
+}
+
 </script>
+
 </body>
 </html>
