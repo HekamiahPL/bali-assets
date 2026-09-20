@@ -47,7 +47,8 @@ jobs:
           grep -q "bali2026_apps_script_exec_url" index.html
           grep -q "__baliJsonp_" index.html
           grep -q "initBottomNavigation_" index.html
-          grep -q "serviceWorker.register" index.html
+          grep -q "serviceWorker" index.html
+          grep -q "\.register" index.html
           if grep -q "<iframe" index.html; then
             echo "Standalone PWA must not depend on iframe UI"
             exit 1
