@@ -1,4 +1,5 @@
-const CACHE = 'bali-2026-shell-v1';
+const CACHE = 'bali-2026-shell-v3';
+
 const ASSETS = [
   './',
   './index.html',
@@ -17,23 +18,50 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE)
+          .map(key => caches.delete(key))
+      )
     )
   );
   self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
+  const request = event.request;
+  const url = new URL(request.url);
+
   if(url.origin !== self.location.origin) return;
 
+  // Nawigacja: świeża wersja, a przy braku internetu cached app shell.
+  if(request.mode === 'navigate'){
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE).then(cache => cache.put('./index.html', copy));
+          return response;
+        })
+        .catch(() =>
+          caches.match('./index.html').then(cached => cached || caches.match('./'))
+        )
+    );
+    return;
+  }
+
+  // Assety: szybki cache z odświeżeniem w tle.
   event.respondWith(
-    caches.match(event.request).then(cached =>
-      cached || fetch(event.request).then(response => {
-        const copy = response.clone();
-        caches.open(CACHE).then(cache => cache.put(event.request, copy));
-        return response;
-      })
-    )
+    caches.match(request).then(cached => {
+      const network = fetch(request)
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE).then(cache => cache.put(request, copy));
+          return response;
+        })
+        .catch(() => cached);
+
+      return cached || network;
+    })
   );
 });
