@@ -65,6 +65,7 @@
     .splash{
       position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
       background:var(--bg);z-index:5;transition:opacity .25s ease;
+      pointer-events:none;
     }
     .splash.hide{opacity:0;pointer-events:none}
     .splash-inner{text-align:center}
@@ -315,12 +316,13 @@
 
     setup.hidden = true;
 
-    // Jeżeli mamy poprzedni zapis, pokazujemy go natychmiast,
-    // a właściwy Apps Script ładuje się niewidocznie w tle.
+    // Splash jest tylko dekoracją i znika natychmiast.
+    // Nigdy nie blokuje dotyku ani nie czeka na Google Apps Script.
+    hideSplash();
+
     if(snapshot){
       offline.classList.add('show');
       renderOffline('refresh');
-      hideSplash();
 
       frame.style.display = 'block';
       frame.style.visibility = 'hidden';
@@ -338,21 +340,18 @@
       loaded = true;
       frame.style.visibility = 'visible';
       offline.classList.remove('show');
-      hideSplash();
     }, {once:true});
 
+    // Jeżeli sieć jest słaba i mamy snapshot, po krótkiej chwili
+    // zostawiamy interaktywną kopię zamiast wiszącego ekranu ładowania.
     setTimeout(() => {
-      if(!loaded){
-        if(snapshot){
-          frame.style.display = 'none';
-          frame.style.visibility = 'visible';
-          offline.classList.add('show');
-          renderOffline('offline');
-        }else{
-          hideSplash();
-        }
+      if(!loaded && snapshot){
+        frame.style.display = 'none';
+        frame.style.visibility = 'visible';
+        offline.classList.add('show');
+        renderOffline('offline');
       }
-    }, 6500);
+    }, 1800);
   }
 
   function saveAndLaunch(){
@@ -385,13 +384,31 @@
   });
 
   window.addEventListener('message', event => {
-    if(event.source !== frame.contentWindow) return;
-
     const msg = event.data;
-    if(!msg || msg.type !== 'BALI_SNAPSHOT' || !msg.snapshot || !msg.snapshot.data) return;
+
+    if(
+      !msg ||
+      msg.type !== 'BALI_SNAPSHOT' ||
+      !msg.snapshot ||
+      !msg.snapshot.data
+    ) return;
+
+    // Apps Script potrafi opakować aplikację w dodatkową ramkę
+    // script.googleusercontent.com, więc event.source nie musi być
+    // bezpośrednio appFrame.contentWindow.
+    const origin = String(event.origin || '');
+
+    if(
+      origin &&
+      !origin.includes('script.google.com') &&
+      !origin.includes('googleusercontent.com')
+    ) return;
 
     try{
-      localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(msg.snapshot));
+      localStorage.setItem(
+        SNAPSHOT_KEY,
+        JSON.stringify(msg.snapshot)
+      );
     }catch(e){}
   });
 
