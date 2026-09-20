@@ -2146,12 +2146,80 @@ async function reloadData() {
       'fulfilled'
     ) {
 
+      const deferredData =
+        deferredResult.value || {};
+
+      // Nie pozwalamy, żeby awaryjna odpowiedź backendu
+      // (np. tylko PLN albo null pogody) nadpisała poprawne
+      // dane pobrane równolegle bezpośrednio w przeglądarce.
+      const currentRates =
+        APP.currencyRates &&
+        APP.currencyRates.rates
+          ? APP.currencyRates.rates
+          : {};
+
+      const backendRates =
+        deferredData.currencyRates &&
+        deferredData.currencyRates.rates
+          ? deferredData.currencyRates.rates
+          : {};
+
+      const currentRatesOk =
+        Boolean(
+          currentRates.IDR &&
+          currentRates.EUR &&
+          currentRates.USD
+        );
+
+      const backendRatesOk =
+        Boolean(
+          backendRates.IDR &&
+          backendRates.EUR &&
+          backendRates.USD
+        );
+
+      const currentWeather =
+        APP.weather;
+
+      const currentWeatherOk =
+        Boolean(
+          currentWeather &&
+          currentWeather.current &&
+          currentWeather.tomorrow
+        );
+
+      const backendWeatherOk =
+        Boolean(
+          deferredData.weather &&
+          deferredData.weather.current &&
+          deferredData.weather.tomorrow
+        );
+
       APP =
         Object.assign(
           {},
           APP,
-          deferredResult.value || {}
+          deferredData
         );
+
+      if (
+        currentRatesOk &&
+        !backendRatesOk
+      ) {
+        APP.currencyRates =
+          {
+            ...APP.currencyRates,
+            rates:currentRates
+          };
+      }
+
+      if (
+        currentWeatherOk &&
+        !backendWeatherOk
+      ) {
+        APP.weather =
+          currentWeather;
+      }
 
       APP.documents =
         APP.documents || [];
