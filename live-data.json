@@ -1,0 +1,64 @@
+{
+  "generatedAt": "2026-09-20T20:32:17.771998+00:00",
+  "weather": {
+    "location": "Bali · Denpasar",
+    "updatedAt": "2026-09-21T04:30",
+    "current": {
+      "temperature": 22.5,
+      "feelsLike": 26.6,
+      "humidity": 96.0,
+      "wind": 5.1,
+      "label": "Częściowe zachmurzenie",
+      "icon": "🌤️"
+    },
+    "tomorrow": {
+      "date": "2026-09-22",
+      "min": 21.7,
+      "max": 29.4,
+      "rainProbability": 14.0,
+      "label": "Mżawka",
+      "icon": "🌦️"
+    },
+    "source": "Open-Meteo"
+  },
+  "currencyRates": {
+    "date": "2026-09-18",
+    "nextUpdate": "",
+    "source": "Frankfurter / ECB",
+    "base": "PLN",
+    "rates": {
+      "PLN": {
+        "rate": 1,
+        "unit": 1
+      },
+      "IDR": {
+        "rate": 4680.88,
+        "unit": 1
+      },
+      "EUR": {
+        "rate": 0.22917,
+        "unit": 1
+      },
+      "USD": {
+        "rate": 0.26263,
+        "unit": 1
+      },
+      "GBP": {
+        "rate": 0.19681,
+        "unit": 1
+      },
+      "TRY": {
+        "rate": 12.8127,
+        "unit": 1
+      },
+      "SGD": {
+        "rate": 0.33576,
+        "unit": 1
+      },
+      "AUD": {
+        "rate": 0.36886,
+        "unit": 1
+      }
+    }
+  }
+}
