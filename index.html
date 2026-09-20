@@ -316,44 +316,24 @@
 
     setup.hidden = true;
 
-    // Splash jest tylko dekoracją i znika natychmiast.
-    // Nigdy nie blokuje dotyku ani nie czeka na Google Apps Script.
+    // Przy połączeniu z internetem nigdy nie przykrywamy aplikacji
+    // żadnym ekranem oczekiwania. Iframe jest od razu widoczny i klikalny.
     hideSplash();
+    offline.classList.remove('show');
 
-    if(snapshot){
-      offline.classList.add('show');
-      renderOffline('refresh');
-
-      frame.style.display = 'block';
-      frame.style.visibility = 'hidden';
-    }else{
-      offline.classList.remove('show');
-      frame.style.display = 'block';
-      frame.style.visibility = 'visible';
-    }
-
+    frame.style.display = 'block';
+    frame.style.visibility = 'visible';
+    frame.style.pointerEvents = 'auto';
     frame.src = url;
 
-    let loaded = false;
-
+    // Jeśli ładowanie potrwa dłużej, nie nakładamy warstwy nad aplikację.
+    // Apps Script ma własny nieblokujący stan synchronizacji.
     frame.addEventListener('load', () => {
-      loaded = true;
       frame.style.display = 'block';
       frame.style.visibility = 'visible';
+      frame.style.pointerEvents = 'auto';
       offline.classList.remove('show');
     }, {once:true});
-
-    // Jeżeli sieć jest słaba i mamy snapshot, po krótkiej chwili
-    // zostawiamy interaktywną kopię zamiast wiszącego ekranu ładowania.
-    setTimeout(() => {
-      if(!loaded && snapshot){
-        // Zostawiamy iframe aktywny w tle. Nie zatrzymujemy jego ładowania.
-        frame.style.display = 'block';
-        frame.style.visibility = 'hidden';
-        offline.classList.add('show');
-        renderOffline('offline');
-      }
-    }, 1800);
   }
 
   function saveAndLaunch(){
