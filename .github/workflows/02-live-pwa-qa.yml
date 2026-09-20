@@ -110,6 +110,12 @@ jobs:
           await page.$eval('.navbtn[data-tab="costs"]',el=>el.click());
 
           await page.waitForFunction(
+            () =>
+              document.querySelector('.navbtn.active')?.dataset.tab === 'costs',
+            {timeout:1000}
+          );
+
+          await page.waitForFunction(
             () => {
               const text=document.querySelector('#content')?.innerText || '';
               return text.includes('Tropical Bali Hotel') &&
@@ -126,9 +132,21 @@ jobs:
             {timeout:12000}
           );
 
-          const costsText=await page.$eval('#content',el=>el.innerText);
-          assert.ok(costsText.includes('Budżet podróży'));
-          assert.ok(costsText.includes('Noclegi'));
+          const costState=await page.evaluate(()=>({
+            active:document.querySelector('.navbtn.active')?.dataset.tab || '',
+            heading:document.querySelector('#content .hero .eyebrow')?.textContent?.trim() || '',
+            text:document.querySelector('#content')?.innerText || ''
+          }));
+
+          console.log('cost state',{
+            active:costState.active,
+            heading:costState.heading,
+            text:costState.text.slice(0,260)
+          });
+
+          assert.equal(costState.active,'costs');
+          assert.equal(costState.heading,'Budżet podróży');
+          assert.ok(costState.text.includes('Noclegi'));
 
           await page.$eval('.navbtn[data-tab="more"]',el=>el.click());
           const moreText=await page.$eval('#content',el=>el.innerText);
