@@ -1226,6 +1226,55 @@ const CANONICAL_BACKEND_URL =
 let BACKEND_URL = '';
 let ACCESS_KEY = '';
 
+function bootstrapAccessKeyFromUrl_() {
+
+  try {
+
+    const current =
+      new URL(
+        window.location.href
+      );
+
+    const key =
+      String(
+        current.searchParams.get('key') || ''
+      ).trim();
+
+    if (!key) {
+      return false;
+    }
+
+    localStorage.setItem(
+      BACKEND_STORAGE_KEY,
+      CANONICAL_BACKEND_URL +
+      '?key=' +
+      encodeURIComponent(key)
+    );
+
+    // Klucz służy tylko do sparowania urządzenia.
+    // Usuwamy go od razu z paska adresu i historii przeglądarki.
+    current.searchParams.delete('key');
+
+    history.replaceState(
+      null,
+      '',
+      current.pathname +
+      (current.searchParams.toString()
+        ? '?' + current.searchParams.toString()
+        : '') +
+      current.hash
+    );
+
+    return true;
+
+  } catch(e) {
+    return false;
+  }
+
+}
+
+bootstrapAccessKeyFromUrl_();
+
 function loadBackendConfig_() {
 
   const raw =
