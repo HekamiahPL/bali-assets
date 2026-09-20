@@ -1,4 +1,4 @@
-const CACHE = 'bali-2026-shell-v5';
+const CACHE = 'bali-2026-shell-v6';
 
 const ASSETS = [
   './',
@@ -33,6 +33,20 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
 
   if(url.origin !== self.location.origin) return;
+
+  // Dane live: zawsze najpierw sieć, a offline ostatnia poprawna kopia.
+  if(url.pathname.endsWith('/live-data.json')){
+    event.respondWith(
+      fetch(request,{cache:'no-store'})
+        .then(response => {
+          const copy=response.clone();
+          caches.open(CACHE).then(cache=>cache.put('./live-data.json',copy));
+          return response;
+        })
+        .catch(()=>caches.match('./live-data.json'))
+    );
+    return;
+  }
 
   // Nawigacja: świeża wersja, a przy braku internetu cached app shell.
   if(request.mode === 'navigate'){
