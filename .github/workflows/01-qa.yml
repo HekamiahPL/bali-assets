@@ -43,7 +43,7 @@ jobs:
         run: |
           grep -q "apple-touch-icon" index.html
           grep -q "manifest.webmanifest" index.html
-          grep -q "standalone-pwa-v1" index.html
+          grep -Eq "standalone-pwa-v[0-9]+" index.html
           grep -q "bali2026_apps_script_exec_url" index.html
           grep -q "__baliJsonp_" index.html
           grep -q "initBottomNavigation_" index.html
