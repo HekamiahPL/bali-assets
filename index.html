@@ -2831,7 +2831,7 @@ function actionLinks(day) {
     onclick="editTransfer('${esc(day.day)}')">🚐 Transfer</button>`;
 
   out += `<button class="btn ghost small"
-    onclick="editDayExtras('${esc(day.day)}')">📝 Dzień</button>`;
+    onclick="editDayExtras('${esc(day.day)}')">✏️ Edytuj dzień</button>`;
 
   out += '</div>';
   return out;
@@ -4575,7 +4575,15 @@ function editDayExtras(dayNumber) {
   if(!day) return;
 
   showModal(
-    `<h2>Dzień ${esc(dayNumber)} · szczegóły</h2>
+    `<h2>Dzień ${esc(dayNumber)} · edycja</h2>
+
+      <div class="field">
+        <label>Opis / plan dnia</label>
+        <textarea
+          id="dayPlanText"
+          rows="7"
+          placeholder="Wpisz plan dnia, atrakcje, godziny i kolejność…">${esc(day.plan || '')}</textarea>
+      </div>
 
       <div class="field">
         <label>Notatka dnia</label>
@@ -4598,13 +4606,14 @@ function editDayExtras(dayNumber) {
       </div>
 
       <div class="actions">
-        <button class="btn" onclick="saveDayExtras('${esc(dayNumber)}')">Zapisz</button>
+        <button class="btn" onclick="saveDayExtras('${esc(dayNumber)}')">Zapisz zmiany</button>
         <button class="btn ghost" onclick="closeModal()">Anuluj</button>
       </div>`
   );
 }
 
 async function saveDayExtras(dayNumber) {
+  const plan=document.getElementById('dayPlanText').value.trim();
   const note=document.getElementById('dayNoteText').value.trim();
   const address=document.getElementById('hotelAddressText').value.trim();
   const whatsapp=document.getElementById('transferWhatsappText').value.trim();
@@ -4612,6 +4621,7 @@ async function saveDayExtras(dayNumber) {
 
   try {
     await Promise.all([
+      api('saveDayDescription',dayNumber,plan),
       api('saveDayNote',dayNumber,note),
       api('saveHotelAddress',dayNumber,address),
       api('saveTransferWhatsapp',dayNumber,whatsapp),
@@ -4620,6 +4630,7 @@ async function saveDayExtras(dayNumber) {
 
     const day=APP.trip.find(x=>String(x.day)===String(dayNumber));
     if(day){
+      day.plan=plan;
       day.dayNote=note;
       day.hotelAddress=address;
       day.transferWhatsapp=whatsapp;
@@ -4630,7 +4641,7 @@ async function saveDayExtras(dayNumber) {
     closeModal();
     render();
   } catch(e) {
-    alert('Nie udało się zapisać szczegółów dnia: ' + e.message);
+    alert('Nie udało się zapisać zmian dnia: ' + e.message);
   }
 }
 
