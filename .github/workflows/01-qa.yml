@@ -61,4 +61,9 @@ jobs:
           fi
           grep -Eq "bali-2026-shell-v[0-9]+" sw.js
           grep -q "live-data.json" index.html
+          grep -q "editChecklistModal" index.html
+          grep -q "saveChecklistEdit" index.html
+          grep -q "deleteChecklist" index.html
+          grep -q "updateChecklistItem" index.html
+          grep -q "deleteChecklistItem" index.html
           echo "Standalone PWA startup and sanity checks passed"
