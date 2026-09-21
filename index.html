@@ -320,6 +320,40 @@
       margin-top:4px;
     }
 
+    .checkmain {
+      flex:1;
+      min-width:0;
+    }
+
+    .check-actions {
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      margin-top:9px;
+    }
+
+    .check-action {
+      border:1px solid var(--line);
+      background:color-mix(in srgb,var(--card) 92%,transparent);
+      color:var(--ink);
+      border-radius:11px;
+      padding:7px 10px;
+      font-size:11px;
+      font-weight:750;
+      cursor:pointer;
+      touch-action:manipulation;
+    }
+
+    .check-action:active {
+      transform:scale(.97);
+    }
+
+    .check-action.danger {
+      color:#B33A32;
+      background:color-mix(in srgb,#FEE9E7 72%,var(--card));
+      border-color:color-mix(in srgb,#B33A32 20%,var(--line));
+    }
+
     .done .checktitle {
       text-decoration:line-through;
       opacity:.55;
@@ -3411,9 +3445,10 @@ function checkRow(item) {
         type="checkbox"
         ${item.done ? 'checked' : ''}
         onchange="toggleCheck('${esc(item.id)}',this.checked)"
+        aria-label="Oznacz zadanie jako zrobione"
       >
 
-      <div>
+      <div class="checkmain">
 
         <div class="checktitle">
           ${esc(item.task)}
@@ -3435,6 +3470,22 @@ function checkRow(item) {
             : ''
           }
 
+        </div>
+
+        <div class="check-actions">
+          <button
+            type="button"
+            class="check-action"
+            onclick="editChecklistModal('${esc(item.id)}')">
+            ✏️ Edytuj
+          </button>
+
+          <button
+            type="button"
+            class="check-action danger"
+            onclick="deleteChecklist('${esc(item.id)}')">
+            🗑 Usuń
+          </button>
         </div>
 
       </div>
@@ -4687,7 +4738,7 @@ async function saveTransfer(dayNumber) {
 }
 
 
-function checklistCategoryOptions() {
+function checklistCategoryOptions(selectedCategory='Inne') {
 
   const defaults =
     [
@@ -4715,13 +4766,19 @@ function checklistCategoryOptions() {
       )
       .filter(Boolean);
 
+  const selected =
+    String(
+      selectedCategory || 'Inne'
+    ).trim();
+
   const categories =
     [
       ...new Set(
         [
           ...existing,
-          ...defaults
-        ]
+          ...defaults,
+          selected
+        ].filter(Boolean)
       )
     ];
 
@@ -4730,11 +4787,240 @@ function checklistCategoryOptions() {
       category =>
         `<option
           value="${esc(category)}"
-          ${category === 'Inne' ? 'selected' : ''}>
+          ${category === selected ? 'selected' : ''}>
           ${esc(category)}
         </option>`
     )
     .join('');
+
+}
+
+
+function editChecklistModal(id) {
+
+  const item =
+    (APP.checklist || [])
+      .find(
+        x =>
+          String(x.id) ===
+          String(id)
+      );
+
+  if (!item) {
+    return alert(
+      'Nie znaleziono tego zadania.'
+    );
+  }
+
+  showModal(
+
+    `<h2>
+      Edytuj zadanie
+    </h2>
+
+    <div class="field">
+      <label>Kategoria</label>
+      <select id="editCheckCat">
+        ${checklistCategoryOptions(item.category || 'Inne')}
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Zadanie</label>
+      <textarea id="editCheckTask">${esc(item.task || '')}</textarea>
+    </div>
+
+    <div class="field">
+      <label>Termin</label>
+      <input
+        id="editCheckDeadline"
+        value="${esc(item.deadline || '')}"
+        placeholder="np. 01.11">
+    </div>
+
+    <div class="field">
+      <label>Notatki</label>
+      <input
+        id="editCheckNotes"
+        value="${esc(item.notes || '')}">
+    </div>
+
+    <div class="actions">
+      <button
+        id="editCheckSave"
+        class="btn"
+        type="button"
+        onclick="saveChecklistEdit('${esc(item.id)}')">
+        Zapisz zmiany
+      </button>
+
+      <button
+        class="btn ghost"
+        type="button"
+        onclick="closeModal()">
+        Anuluj
+      </button>
+    </div>`
+
+  );
+
+}
+
+
+async function saveChecklistEdit(id) {
+
+  const category =
+    document
+      .getElementById('editCheckCat')
+      .value
+      .trim();
+
+  const task =
+    document
+      .getElementById('editCheckTask')
+      .value
+      .trim();
+
+  const deadline =
+    document
+      .getElementById('editCheckDeadline')
+      .value
+      .trim();
+
+  const notes =
+    document
+      .getElementById('editCheckNotes')
+      .value
+      .trim();
+
+  if (!task) {
+    return alert(
+      'Zadanie nie może być puste.'
+    );
+  }
+
+  const saveButton =
+    document.getElementById(
+      'editCheckSave'
+    );
+
+  if (saveButton) {
+    saveButton.disabled = true;
+    saveButton.textContent =
+      'Zapisuję…';
+  }
+
+  try {
+
+    await api(
+      'updateChecklistItem',
+      id,
+      category,
+      task,
+      deadline,
+      notes
+    );
+
+    const item =
+      (APP.checklist || [])
+        .find(
+          x =>
+            String(x.id) ===
+            String(id)
+        );
+
+    if (item) {
+      item.category = category;
+      item.task = task;
+      item.deadline = deadline;
+      item.notes = notes;
+    }
+
+    if (
+      typeof saveOfflineSnapshot_ ===
+      'function'
+    ) {
+      saveOfflineSnapshot_();
+    }
+
+    closeModal();
+    renderChecklist();
+
+  } catch(e) {
+
+    if (saveButton) {
+      saveButton.disabled = false;
+      saveButton.textContent =
+        'Zapisz zmiany';
+    }
+
+    alert(
+      'Nie udało się zapisać zmian: ' +
+      e.message
+    );
+
+  }
+
+}
+
+
+async function deleteChecklist(id) {
+
+  const item =
+    (APP.checklist || [])
+      .find(
+        x =>
+          String(x.id) ===
+          String(id)
+      );
+
+  if (!item) {
+    return;
+  }
+
+  const accepted =
+    confirm(
+      'Usunąć zadanie „' +
+      String(item.task || '') +
+      '”?'
+    );
+
+  if (!accepted) {
+    return;
+  }
+
+  try {
+
+    await api(
+      'deleteChecklistItem',
+      id
+    );
+
+    APP.checklist =
+      (APP.checklist || [])
+        .filter(
+          x =>
+            String(x.id) !==
+            String(id)
+        );
+
+    if (
+      typeof saveOfflineSnapshot_ ===
+      'function'
+    ) {
+      saveOfflineSnapshot_();
+    }
+
+    renderChecklist();
+
+  } catch(e) {
+
+    alert(
+      'Nie udało się usunąć zadania: ' +
+      e.message
+    );
+
+  }
 
 }
 
