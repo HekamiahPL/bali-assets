@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-09-30T08:40:56.027720+00:00",
+  "generatedAt": "2026-09-30T15:58:15.001379+00:00",
   "weather": {
     "location": "Bali · Denpasar",
-    "updatedAt": "2026-09-30T16:30",
+    "updatedAt": "2026-09-30T23:45",
     "current": {
-      "temperature": 27.7,
-      "feelsLike": 30.4,
-      "humidity": 73.0,
-      "wind": 16.5,
+      "temperature": 24.8,
+      "feelsLike": 29.2,
+      "humidity": 92.0,
+      "wind": 8.7,
       "label": "Częściowe zachmurzenie",
       "icon": "🌤️"
     },
     "tomorrow": {
       "date": "2026-10-01",
       "min": 22.6,
-      "max": 29.2,
+      "max": 29.4,
       "rainProbability": 24.0,
       "label": "Mżawka",
       "icon": "🌦️"
@@ -22,7 +22,7 @@
     "source": "Open-Meteo"
   },
   "currencyRates": {
-    "date": "2026-09-29",
+    "date": "2026-09-30",
     "nextUpdate": "",
     "source": "Frankfurter / ECB",
     "base": "PLN",
@@ -32,31 +32,31 @@
         "unit": 1
       },
       "IDR": {
-        "rate": 4661.76,
+        "rate": 4649.81,
         "unit": 1
       },
       "EUR": {
-        "rate": 0.22908,
+        "rate": 0.22889,
         "unit": 1
       },
       "USD": {
-        "rate": 0.26012,
+        "rate": 0.2599,
         "unit": 1
       },
       "GBP": {
-        "rate": 0.19636,
+        "rate": 0.19561,
         "unit": 1
       },
       "TRY": {
-        "rate": 12.746,
+        "rate": 12.7398,
         "unit": 1
       },
       "SGD": {
-        "rate": 0.33226,
+        "rate": 0.33195,
         "unit": 1
       },
       "AUD": {
-        "rate": 0.37136,
+        "rate": 0.37301,
         "unit": 1
       }
     }
