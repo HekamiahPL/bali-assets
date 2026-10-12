@@ -4395,6 +4395,24 @@ function renderMore() {
   const emergency=APP.emergency || [];
   const offline=loadOfflineSnapshot_();
 
+  const insuranceDocs=docs.filter(
+    x=>String(x.category || '').trim().toLowerCase()==='ubezpieczenie'
+  );
+  const otherDocs=docs.filter(
+    x=>String(x.category || '').trim().toLowerCase()!=='ubezpieczenie'
+  );
+  const mainPolicy=
+    insuranceDocs.find(x=>/polisa generali/i.test(x.name || '')) ||
+    insuranceDocs[0] ||
+    null;
+  const generaliEmergency=
+    emergency.find(x=>/generali/i.test(x.name || '')) ||
+    null;
+  const generaliPhone=
+    generaliEmergency ? phoneDigits_(String(generaliEmergency.phone || '').split('/')[0]) : '';
+  const generaliUrl=
+    generaliEmergency ? safeExternalUrl_(generaliEmergency.url) : '';
+
   document.getElementById('content').innerHTML = `
     <div class="hero">
       <div class="eyebrow">Wszystko pod ręką</div>
@@ -4446,9 +4464,28 @@ function renderMore() {
       </div>
     </div>
 
-    <h3 class="section-title">📄 Dokumenty</h3>
+    <h3 class="section-title">🛡️ Ubezpieczenie Generali</h3>
     <div class="card">
-      ${docs.length ? docs.map(docRow_).join('') : '<div class="empty">Brak zapisanych dokumentów.</div>'}
+      ${mainPolicy ? `
+        <div class="section-kicker">Wasza polisa na Bali</div>
+        <div class="mini-title" style="font-size:18px;margin-top:4px">${esc(mainPolicy.name)}</div>
+        <div class="mini-meta" style="margin-top:8px;line-height:1.55">${esc(mainPolicy.notes || '')}</div>
+        <div class="actions" style="margin-top:14px">
+          ${generaliPhone ? `<a class="btn small" href="tel:${esc(generaliPhone)}">📞 Assistance</a>` : ''}
+          ${generaliUrl ? `<a class="btn secondary small" href="${esc(generaliUrl)}" target="_blank" rel="noopener noreferrer">🆘 Zgłoś szkodę</a>` : ''}
+          ${safeExternalUrl_(mainPolicy.url) ? `<a class="btn ghost small" href="${esc(mainPolicy.url)}" target="_blank" rel="noopener noreferrer">📄 Otwórz polisę</a>` : ''}
+        </div>
+      ` : '<div class="empty">Brak zapisanej polisy.</div>'}
+
+      ${insuranceDocs
+        .filter(x=>!mainPolicy || x.id!==mainPolicy.id)
+        .map(docRow_)
+        .join('')}
+    </div>
+
+    <h3 class="section-title">📄 Pozostałe dokumenty</h3>
+    <div class="card">
+      ${otherDocs.length ? otherDocs.map(docRow_).join('') : '<div class="empty">Brak pozostałych dokumentów.</div>'}
     </div>
     <button class="btn ghost" style="width:100%" onclick="addDocModal()">＋ Dodaj dokument</button>
 
