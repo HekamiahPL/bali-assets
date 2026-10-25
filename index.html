@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- BALI_BUILD: standalone-pwa-v8 -->
+<!-- BALI_BUILD: standalone-pwa-v9 -->
 <html lang="pl">
 <head>
   <meta charset="utf-8">
@@ -3527,7 +3527,7 @@ function renderChecklist() {
   const categories =
     [
       ...new Set(
-        APP.checklist.map(
+        APP.checklist.filter(x=>!x.done).map(
           x => x.category
         )
       )
@@ -3566,7 +3566,7 @@ function renderChecklist() {
 
       const items =
         APP.checklist.filter(
-          x => x.category === cat
+          x => x.category === cat && !x.done
         );
 
 
@@ -3595,6 +3595,11 @@ function renderChecklist() {
 
     </button>`;
 
+
+  const completed=APP.checklist.filter(x=>x.done);
+  if(completed.length) {
+    body+=`<h3 class="section-title">Done · ${completed.length}</h3><div class="card" id="checklistDone">${completed.map(checkRow).join('')}</div>`;
+  }
 
   document.getElementById('content').innerHTML =
     body;
@@ -5354,7 +5359,7 @@ if (
       navigator
         .serviceWorker
         .register(
-          './sw.js?v=13'
+          './sw.js?v=14'
         )
         .catch(
           () => {}
