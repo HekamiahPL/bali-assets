@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- BALI_BUILD: standalone-pwa-v7 -->
+<!-- BALI_BUILD: standalone-pwa-v8 -->
 <html lang="pl">
 <head>
   <meta charset="utf-8">
@@ -3643,48 +3643,26 @@ async function toggleCheck(id, done) {
 
 
 function renderTransport() {
-
-  const rows =
-    APP.trip.filter(
-      d =>
-        d.transfer ||
-        /transfer|fast boat|wylot|parking|kierowc|prom/i
-          .test(d.plan)
-    );
-
-
-  document.getElementById('content').innerHTML =
-
-    `<div class="hero">
-
-      <div class="eyebrow">
-        Logistyka
-      </div>
-
-      <h2>
-        Transporty
-      </h2>
-
-      <p>
-        Łodzie, kierowcy, loty i transfery.
-        Dane w tej sekcji zapisują się do
-        kolumny transportowej w Google Sheet.
-      </p>
-
-    </div>`
-
-    +
-
-    (
-      rows.length
-        ? rows
-            .map(d => tripCard(d))
-            .join('')
-        : '<div class="empty">Brak wpisanych transportów.</div>'
-    );
-
+  const today=baliTodayIso();
+  const rows=(APP.trip || []).filter(d=>d.transfer || /transfer|fast boat|wylot|parking|kierowc|prom/i.test(d.plan));
+  const isPast=d=>Boolean(d.isoDate && d.isoDate<today);
+  const byDate=(a,b)=>String(a.isoDate || '9999').localeCompare(String(b.isoDate || '9999')) || Number(a.day)-Number(b.day);
+  const upcoming=rows.filter(d=>!isPast(d)).sort(byDate);
+  const past=rows.filter(isPast).sort(byDate);
+  document.getElementById('content').innerHTML=`
+    <style>
+      .transport-past .card{opacity:.64}
+      .transport-past .daybadge,.transport-past .date,.transport-past .plan,.transport-past .transport{text-decoration:line-through}
+    </style>
+    <div class="hero">
+      <div class="eyebrow">Logistyka</div>
+      <h2>Transporty</h2>
+      <p>Łodzie, kierowcy, loty i transfery.</p>
+    </div>
+    ${upcoming.map(d=>tripCard(d)).join('')}
+    ${past.length ? '<h3 class="section-title">Minione dni</h3>'+past.map(d=>'<div class="transport-past">'+tripCard(d)+'</div>').join('') : ''}
+    ${rows.length ? '' : '<div class="empty">Brak wpisanych transportów.</div>'}`;
 }
-
 
 
 function formatAmount(amount, currency) {
@@ -5376,7 +5354,7 @@ if (
       navigator
         .serviceWorker
         .register(
-          './sw.js?v=12'
+          './sw.js?v=13'
         )
         .catch(
           () => {}
