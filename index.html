@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- BALI_BUILD: standalone-pwa-v2 -->
+<!-- BALI_BUILD: standalone-pwa-v3 -->
 <html lang="pl">
 <head>
   <meta charset="utf-8">
@@ -3794,6 +3794,10 @@ function costRow(item) {
           </div>
         </div>
       </div>
+      <div class="actions" style="margin-top:12px">
+        <button class="btn ghost" onclick="editCostModal('${esc(item.id)}')">Edytuj</button>
+        <button class="btn ghost" onclick="deleteCost('${esc(item.id)}',this)">Usuń</button>
+      </div>
     </div>`;
 }
 
@@ -4076,7 +4080,8 @@ function updateConverter() {
 }
 
 
-function addCostModal() {
+function addCostModal(editId) {
+  const cost=(APP.costs || []).find(x=>String(x.id)===String(editId));
   const dayOptions=
     '<option value="">Bez przypisania do dnia</option>' +
     (APP.trip || []).map(d=>
@@ -4084,7 +4089,7 @@ function addCostModal() {
     ).join('');
 
   showModal(
-    `<h2>Nowy koszt</h2>
+    `<h2>${cost ? 'Edytuj koszt' : 'Nowy koszt'}</h2>
 
       <div class="field">
         <label>Kategoria</label>
@@ -4150,13 +4155,44 @@ function addCostModal() {
       </div>
 
       <div class="actions">
-        <button class="btn" onclick="saveNewCost()">Dodaj</button>
+        <button id="costSave" class="btn" onclick="saveNewCost()">${cost ? 'Zapisz zmiany' : 'Dodaj'}</button>
         <button class="btn ghost" onclick="closeModal()">Anuluj</button>
       </div>`
   );
+
+  const button=document.getElementById('costSave');
+  button.dataset.editId=cost ? cost.id : '';
+  if(cost) {
+    for(const [field,key] of Object.entries({Cat:'category',Item:'item',Amount:'amount',Currency:'currency',Day:'day',People:'people',Status:'status',Notes:'notes'})) {
+      const input=document.getElementById('newCost'+field);
+      const value=String(cost[key] ?? '');
+      if(input.tagName==='SELECT' && !Array.from(input.options).some(o=>o.value===value)) input.add(new Option(value,value));
+      input.value=value;
+    }
+  }
+}
+
+function editCostModal(id) { addCostModal(id); }
+
+async function deleteCost(id, button) {
+  const cost=(APP.costs || []).find(x=>String(x.id)===String(id));
+  if(!cost || (button && button.disabled) || !confirm('Usunąć koszt „'+cost.item+'”?')) return;
+  if(button) button.disabled=true;
+  try {
+    await api('deleteCostItem',id);
+    APP.costs=APP.costs.filter(x=>String(x.id)!==String(id));
+    saveOfflineSnapshot_();
+    renderCosts();
+  } catch(e) {
+    if(button) button.disabled=false;
+    alert('Nie udało się usunąć kosztu: '+e.message);
+  }
 }
 
 async function saveNewCost() {
+  const button=document.getElementById('costSave');
+  if(button.disabled) return;
+  const editId=button.dataset.editId;
   const category=document.getElementById('newCostCat').value.trim();
   const item=document.getElementById('newCostItem').value.trim();
   const amount=document.getElementById('newCostAmount').value;
@@ -4167,14 +4203,22 @@ async function saveNewCost() {
   const notes=document.getElementById('newCostNotes').value.trim();
 
   if(!item) return alert('Wpisz nazwę kosztu.');
-  if(!amount || Number(amount) < 0) return alert('Wpisz poprawną kwotę.');
+  if(amount === '' || !Number.isFinite(Number(amount)) || Number(amount) < 0) return alert('Wpisz poprawną kwotę.');
 
+  if(!Number.isInteger(people) || people<1) return alert('Wpisz poprawną liczbę osób.');
+  button.disabled=true;
+  button.textContent='Zapisuję…';
   try {
-    await api('addCostItem',category,item,currency,Number(amount),status,notes,day,people);
+    const values=[category,item,currency,Number(amount),status,notes,day,people];
+    const result=editId ? await api('updateCostItem',editId,...values) : await api('addCostItem',...values);
+    const updated={id:editId || result.id,category,item,currency,amount:Number(amount),status,notes,day,people};
+    APP.costs=editId ? (APP.costs || []).map(x=>String(x.id)===String(editId) ? updated : x) : [...(APP.costs || []),updated];
+    saveOfflineSnapshot_();
     closeModal();
-    await reloadData();
     setTab('costs');
   } catch(e) {
+    button.disabled=false;
+    button.textContent=editId ? 'Zapisz zmiany' : 'Dodaj';
     alert('Nie udało się zapisać kosztu: ' + e.message);
   }
 }
@@ -5254,7 +5298,7 @@ if (
       navigator
         .serviceWorker
         .register(
-          './sw.js?v=7'
+          './sw.js?v=8'
         )
         .catch(
           () => {}

@@ -1,4 +1,4 @@
-const CACHE = 'bali-2026-shell-v7';
+const CACHE = 'bali-2026-shell-v8';
 
 const ASSETS = [
   './',
@@ -51,7 +51,7 @@ self.addEventListener('fetch', event => {
   // Nawigacja: świeża wersja, a przy braku internetu cached app shell.
   if(request.mode === 'navigate'){
     event.respondWith(
-      fetch(request)
+      fetch(request,{cache:'no-store'})
         .then(response => {
           const copy = response.clone();
           caches.open(CACHE).then(cache => cache.put('./index.html', copy));
@@ -67,7 +67,7 @@ self.addEventListener('fetch', event => {
   // Assety: szybki cache z odświeżeniem w tle.
   event.respondWith(
     caches.match(request).then(cached => {
-      const network = fetch(request)
+      const network = fetch(request,{cache:'no-store'})
         .then(response => {
           const copy = response.clone();
           caches.open(CACHE).then(cache => cache.put(request, copy));
@@ -79,3 +79,4 @@ self.addEventListener('fetch', event => {
     })
   );
 });
+
