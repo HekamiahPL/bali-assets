@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- BALI_BUILD: standalone-pwa-v5 -->
+<!-- BALI_BUILD: standalone-pwa-v6 -->
 <html lang="pl">
 <head>
   <meta charset="utf-8">
@@ -3826,18 +3826,45 @@ function costCategoryChart_(costs) {
   if(!total) return '<div class="empty">Dodaj koszt z kwotą większą od zera, aby zobaczyć podział na kategorie.</div>';
   const palette=['#59d6ad','#68a9ff','#ffc76b','#c49aff','#ff8f9b','#63d5e6','#dbb784'];
   let offset=0;
-  const segments=entries.map(([name,value],i)=>{
+  const slices=entries.map(([name,value],i)=>{
     const share=value/total*100;
-    const segment=`<circle cx="60" cy="60" r="45" fill="none" stroke="${palette[i%palette.length]}" stroke-width="22" pathLength="100" stroke-dasharray="${share} ${100-share}" stroke-dashoffset="${-offset}" transform="rotate(-90 60 60)"><title>${esc(name)}: ${plnLabel(value)} (${share.toLocaleString('pl-PL',{maximumFractionDigits:1})}%)</title></circle>`;
+    const angle=(offset+share/2)*Math.PI/50-Math.PI/2;
+    const slice={name,value,share,offset,angle,color:palette[i%palette.length],side:Math.cos(angle)>=0 ? 1 : -1};
     offset+=share;
-    return segment;
+    return slice;
+  });
+  const maxSide=Math.max(...[-1,1].map(side=>slices.filter(x=>x.side===side).length));
+  const height=Math.max(260,maxSide*52+30);
+  const cy=height/2;
+  for(const side of [-1,1]) {
+    const labels=slices.filter(x=>x.side===side).sort((a,b)=>Math.sin(a.angle)-Math.sin(b.angle));
+    labels.forEach((slice,i)=>{
+      const ideal=cy+Math.sin(slice.angle)*100;
+      slice.y=Math.max(30+i*52,Math.min(height-30-(labels.length-1-i)*52,ideal));
+      if(i) slice.y=Math.max(slice.y,labels[i-1].y+52);
+    });
+  }
+  const percent=value=>value.toLocaleString('pl-PL',{maximumFractionDigits:1})+'%';
+  const segments=slices.map(slice=>`<circle cx="200" cy="${cy}" r="80" fill="none" stroke="${slice.color}" stroke-width="32" pathLength="100" stroke-dasharray="${slice.share} ${100-slice.share}" stroke-dashoffset="${-slice.offset}" transform="rotate(-90 200 ${cy})"><title>${esc(slice.name)}: ${plnLabel(slice.value)} (${percent(slice.share)})</title></circle>`).join('');
+  const labels=slices.map(slice=>{
+    const x=200+Math.cos(slice.angle)*98;
+    const y=cy+Math.sin(slice.angle)*98;
+    const edge=slice.side===1 ? 300 : 100;
+    const textX=slice.side===1 ? 394 : 6;
+    const anchor=slice.side===1 ? 'end' : 'start';
+    const name=slice.name.length>15 ? slice.name.slice(0,14)+'…' : slice.name;
+    return `<path d="M${x},${y} L${edge},${slice.y} L${slice.side===1 ? 388 : 12},${slice.y}" fill="none" stroke="${slice.color}" stroke-width="1.4" opacity=".65"/>
+      <text x="${textX}" y="${slice.y-18}" text-anchor="${anchor}" fill="currentColor" font-size="13" font-weight="700">${esc(name)}</text>
+      <text x="${textX}" y="${slice.y-3}" text-anchor="${anchor}" fill="${slice.color}" font-size="13" font-weight="800">${percent(slice.share)}</text>
+      <text x="${textX}" y="${slice.y+16}" text-anchor="${anchor}" fill="currentColor" font-size="12" font-weight="600">${plnLabel(slice.value)}</text>`;
   }).join('');
-  const rows=entries.map(([name,value],i)=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border,rgba(128,128,128,.18))">
-    <span aria-hidden="true" style="width:12px;height:12px;border-radius:50%;background:${palette[i%palette.length]};flex-shrink:0"></span>
-    <span style="flex:1;min-width:0">${esc(name)}</span>
-    <span style="text-align:right;flex-shrink:0"><b>${plnLabel(value)}</b><br><span class="muted">${(value/total*100).toLocaleString('pl-PL',{maximumFractionDigits:1})}%</span></span>
-  </div>`).join('');
-  return `<div style="text-align:center;margin-bottom:12px"><svg viewBox="0 0 120 120" role="img" aria-label="Udział kosztów według kategorii" style="width:220px;max-width:100%;height:auto">${segments}</svg><div class="muted">Łącznie</div><strong>${plnLabel(total)}</strong></div>${rows}<p class="muted" style="font-size:13px;margin-bottom:0">Wszystkie zapisane koszty, także planowane, przeliczone na PLN.${missing ? ' Pominięto pozycje bez dostępnego kursu: '+missing+'.' : ''}</p>`;
+  return `<svg viewBox="0 0 400 ${height}" role="img" aria-label="Koszty według kategorii: ${esc(slices.map(x=>x.name+' '+percent(x.share)+' '+plnLabel(x.value)).join('; '))}" style="display:block;width:100%;height:auto;overflow:visible">
+    ${segments}
+    <text x="200" y="${cy-9}" text-anchor="middle" fill="currentColor" opacity=".65" font-size="12">Łącznie · PLN</text>
+    <text x="200" y="${cy+13}" text-anchor="middle" fill="currentColor" font-size="15" font-weight="800">${total.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})}</text>
+    ${labels}
+    ${missing ? '<title>Pozycje bez dostępnego kursu pominięte: '+missing+'</title>' : ''}
+  </svg>`;
 }
 
 function renderCosts() {
@@ -5345,7 +5372,7 @@ if (
       navigator
         .serviceWorker
         .register(
-          './sw.js?v=10'
+          './sw.js?v=11'
         )
         .catch(
           () => {}
