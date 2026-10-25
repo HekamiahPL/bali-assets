@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- BALI_BUILD: standalone-pwa-v9 -->
+<!-- BALI_BUILD: standalone-pwa-v10 -->
 <html lang="pl">
 <head>
   <meta charset="utf-8">
@@ -3189,6 +3189,11 @@ function renderPlan() {
   const today =
     baliTodayIso();
 
+  const byDate=(a,b)=>String(a.isoDate || '9999').localeCompare(String(b.isoDate || '9999')) || Number(a.day)-Number(b.day);
+  const upcoming=APP.trip.filter(d=>!d.isoDate || d.isoDate>=today).sort(byDate);
+  const past=APP.trip.filter(d=>d.isoDate && d.isoDate<today).sort(byDate);
+  const dayCard=d=>`<div id="plan-day-${esc(d.day)}" data-plan-day="${esc(d.day)}">${tripCard(d)}</div>`;
+
   const route =
     `<div class="plan-route-sticky">
 
@@ -3215,7 +3220,7 @@ function renderPlan() {
         class="plan-route-track"
         id="planRouteTrack">
 
-        ${APP.trip
+        ${upcoming
           .map(
             d =>
               `<button
@@ -3247,9 +3252,7 @@ function renderPlan() {
       </h2>
 
       <p>
-        Pasek poniżej zostaje na górze
-        podczas przewijania i pokazuje,
-        przy którym dniu jesteście.
+        Dzisiejszy dzień i kolejne plany są na górze. Minione dni znajdziesz w zwijanej sekcji na dole.
       </p>
 
     </div>`
@@ -3260,16 +3263,8 @@ function renderPlan() {
 
     +
 
-    APP.trip
-      .map(
-        d =>
-          `<div
-            id="plan-day-${esc(d.day)}"
-            data-plan-day="${esc(d.day)}">
-            ${tripCard(d)}
-          </div>`
-      )
-      .join('');
+    upcoming.map(dayCard).join('')
+    + (past.length ? `<details id="planPastDays" ${upcoming.length ? '' : 'open'} style="margin-top:18px"><summary class="section-title" style="cursor:pointer;padding:14px 0">Minione dni · ${past.length}</summary>${past.map(dayCard).join('')}</details>` : '');
 
 
   requestAnimationFrame(
@@ -3366,6 +3361,9 @@ function jumpToPlanDay(dayNumber) {
   if (!el) {
     return;
   }
+
+  const archive=el.closest('details');
+  if(archive) archive.open=true;
 
   setPlanActive(
     dayNumber,
@@ -5359,7 +5357,7 @@ if (
       navigator
         .serviceWorker
         .register(
-          './sw.js?v=14'
+          './sw.js?v=15'
         )
         .catch(
           () => {}
