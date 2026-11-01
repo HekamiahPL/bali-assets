@@ -1,23 +1,23 @@
 {
-  "generatedAt": "2026-10-31T23:27:25.155886+00:00",
+  "generatedAt": "2026-11-01T06:22:02.968445+00:00",
   "weather": {
     "location": "Bali · Denpasar",
-    "updatedAt": "2026-11-01T07:15",
+    "updatedAt": "2026-11-01T14:15",
     "current": {
-      "temperature": 25.9,
-      "feelsLike": 30.9,
-      "humidity": 87.0,
-      "wind": 6.2,
-      "label": "Częściowe zachmurzenie",
-      "icon": "🌤️"
+      "temperature": 28.8,
+      "feelsLike": 33.0,
+      "humidity": 71.0,
+      "wind": 15.5,
+      "label": "Deszcz",
+      "icon": "🌧️"
     },
     "tomorrow": {
       "date": "2026-11-02",
-      "min": 22.4,
-      "max": 28.3,
+      "min": 22.9,
+      "max": 28.2,
       "rainProbability": 100.0,
-      "label": "Burze",
-      "icon": "⛈️"
+      "label": "Deszcz",
+      "icon": "🌧️"
     },
     "source": "Open-Meteo"
   },
