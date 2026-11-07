@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-11-07T00:08:25.565748+00:00",
+  "generatedAt": "2026-11-07T06:11:43.164901+00:00",
   "weather": {
     "location": "Bali · Denpasar",
-    "updatedAt": "2026-11-07T08:00",
+    "updatedAt": "2026-11-07T14:00",
     "current": {
-      "temperature": 27.5,
-      "feelsLike": 32.3,
-      "humidity": 80.0,
-      "wind": 7.7,
+      "temperature": 30.3,
+      "feelsLike": 36.1,
+      "humidity": 68.0,
+      "wind": 10.9,
       "label": "Mżawka",
       "icon": "🌦️"
     },
     "tomorrow": {
       "date": "2026-11-08",
-      "min": 24.8,
-      "max": 31.1,
+      "min": 24.9,
+      "max": 30.9,
       "rainProbability": 91.0,
       "label": "Mżawka",
       "icon": "🌦️"
